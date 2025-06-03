@@ -534,43 +534,22 @@ export const loadInitialReceipts = async (channelId: string, dispatch?: Dispatch
         });
 
         // REDUX TRACE - Initial Load Processing
-        console.log('識 [Redux Trace] Processing messageReceiptsMap for dispatch:', {
-            channelId,
-            totalMessages: messageReceiptsMap.size,
-            messageMap: Array.from(messageReceiptsMap.entries()).map(([msgId, users]) => ({
-                messageId: msgId,
-                userCount: users.size,
-                users: Array.from(users)
-            }))
-        });
+     
 
         // Build setReaders payload with detailed logging
         const setReadersPayload: Record<string, string[]> = {};
         messageReceiptsMap.forEach((users, messageId) => {
             const userArray = Array.from(users);
             setReadersPayload[messageId] = userArray;
-            console.log('識 [Redux Trace] Processing message for setReaders:', {
-                messageId,
-                channelId,
-                userCount: userArray.length,
-                users: userArray
-            });
+          
         });
 
         // Final payload verification before dispatch
-        console.log('識 [Redux Trace] Final setReaders payload:', {
-            channelId,
-            totalMessages: Object.keys(setReadersPayload).length,
-            structure: {
-                actionType: 'channelReaders/setReaders',
-                payload: { channelId, payload: setReadersPayload }
-            },
-            timestamp: new Date().toISOString()
-        });
+        
 
         if (dispatch) {
             dispatch(setReaders({ channelId, payload: setReadersPayload }));
-            console.log('識 [Redux Trace] setReaders dispatch complete for channel:', channelId);
+            //console.log('識 [Redux Trace] setReaders dispatch complete for channel:', channelId);
         }
 
         console.log('💾 [Store] Updated maps:', {
