@@ -77,41 +77,52 @@ export const setMattermostStore = (store: Store<MattermostState> | null) => {
         // Track seen posts to avoid duplicate processing
         const processedPosts = new Set<string>();
 
-        // Subscribe to post updates to handle new messages
-        store.subscribe(() => {
-            const currentState = store.getState() as MattermostStateWithPosts;
-            const posts = currentState?.entities?.posts?.posts || {};
-            const channels = currentState?.entities?.channels?.channels || {};
-            
-            // Check for new DM posts
-            Object.entries(posts).forEach(([postId, post]) => {
-                if (post && !processedPosts.has(postId)) {
-                    processedPosts.add(postId);
-                    
-                    const channel = channels[post.channel_id];
-                    if (channel?.type === 'D') { // Direct Message channel
-                        console.log('📨 [Store] New DM message detected:', {
-                            postId,
+        // Store subscription for post updates
+        const handlePostUpdate = (post: Post) => {
+            const store = getMattermostStore();
+            if (!store) return;
+
+            const state = store.getState() as MattermostStateWithPosts;
+            const channels = state.entities.channels?.channels || {};
+            const channel = channels[post.channel_id];
+
+            if (channel?.type === 'D') { // Direct Message channel
+                console.log('📨 [Store] New DM message detected:', {
+                    postId: post.id,
+                    channelId: post.channel_id,
+                    timestamp: new Date().toISOString()
+                });
+                
+                // Debounce the channel state load to prevent multiple rapid API calls
+                debounceChannelLoad(post.channel_id, async () => {
+                    try {
+                        await loadInitialReceipts(post.channel_id, store.dispatch, false);
+                        console.log('✅ [Store] DM channel state loaded for new message:', {
                             channelId: post.channel_id,
-                            timestamp: new Date().toISOString()
+                            postId: post.id
                         });
-                        
-                        // Load latest channel state including this message
-                        setTimeout(() => {
-                            loadInitialReceipts(post.channel_id, store.dispatch, false)
-                                .then(() => {
-                                    console.log('✅ [Store] DM channel state loaded for new message:', {
-                                        channelId: post.channel_id,
-                                        postId
-                                    });
-                                })
-                                .catch(error => {
-                                    console.error('❌ [Store] Failed to load DM channel state:', error);
-                                });
-                        }, 1000); // Small delay to ensure server has processed any read receipts
+                    } catch (error) {
+                        console.error('❌ [Store] Failed to load DM channel state:', error);
                     }
-                }
-            });
+                });
+            }
+        };
+
+        // Initialize store update subscription
+        let lastPostId: string | null = null;
+        store.subscribe(() => {
+            const state = store.getState() as MattermostStateWithPosts;
+            const posts = state.entities.posts?.posts || {};
+            
+            // Get the most recent post
+            const latestPost = Object.values(posts)
+                .sort((a, b) => b.create_at - a.create_at)[0];
+                
+            // Only process if this is a new post we haven't seen
+            if (latestPost && latestPost.id !== lastPostId) {
+                lastPostId = latestPost.id;
+                handlePostUpdate(latestPost);
+            }
         });
 
     } catch (error) {
@@ -392,6 +403,22 @@ export const getUserDisplayName = (userId: string): string => {
         return `User ${userId.substring(0, 8)}`;
     }
 };
+
+// Utility function to debounce API calls
+const debounceMap = new Map<string, ReturnType<typeof setTimeout>>();
+
+function debounceChannelLoad(channelId: string, fn: () => Promise<void>, delay: number = 300) {
+    if (debounceMap.has(channelId)) {
+        clearTimeout(debounceMap.get(channelId)!);
+    }
+    
+    const timeoutId = setTimeout(async () => {
+        debounceMap.delete(channelId);
+        await fn();
+    }, delay);
+    
+    debounceMap.set(channelId, timeoutId);
+}
 
 // Custom event for store updates
 const STORE_UPDATE_EVENT = 'mattermost-readreceipts_store_update';

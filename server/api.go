@@ -612,13 +612,3 @@ func (p *Plugin) getSinceMillis(r *http.Request) (int64, error) {
 
 	return 0, fmt.Errorf("missing since or postID")
 }
-
-// Helper function to check if a user is in a list
-func containsUser(users []string, userID string) bool {
-	for _, u := range users {
-		if u == userID {
-			return true
-		}
-	}
-	return false
-}
