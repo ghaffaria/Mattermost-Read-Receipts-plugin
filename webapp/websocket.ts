@@ -72,40 +72,15 @@ export function handleWebSocketEvent(dispatch: Dispatch) {
             if (isDM) {
                 debug.log('DM', 'Processing DM read receipt', { MessageID, UserID, ChannelID });
                 
-                // For DMs, update all messages up to this one as read
-                const posts = store?.getState()?.entities?.posts?.posts || {};
-                const targetPost = posts[MessageID];
-                
-                if (targetPost) {
-                    // Find all relevant posts in this DM channel
-                    const dmPosts = Object.values(posts)
-                        .filter((p: any) => 
-                            p.channel_id === ChannelID && 
-                            p.create_at <= targetPost.create_at
-                        );
-
-                    // Process in batches to prevent UI lag
-                    const batchSize = 50;
-                    for (let i = 0; i < dmPosts.length; i += batchSize) {
-                        const batch = dmPosts.slice(i, i + batchSize);
-                        setTimeout(() => {
-                            batch.forEach((post: any) => {
-                                dispatch(addReader({
-                                    channelId: ChannelID,
-                                    postId: post.id,
-                                    userId: UserID,
-                                    isDM: true
-                                }));
-                            });
-                        }, Math.floor(i / batchSize) * 10);
-                    }
-
-                    debug.log('DM', 'Updated DM read states', {
-                        channelId: ChannelID,
-                        messageCount: dmPosts.length,
-                        reader: UserID
+                // For DMs, trigger a full channel state sync
+                import('./store').then(({ loadInitialReceipts }) => {
+                    loadInitialReceipts(ChannelID, dispatch, false).catch(error => {
+                        debug.error('Failed to sync DM channel state:', error);
                     });
-                }
+                }).catch(error => {
+                    debug.error('Failed to import store module:', error);
+                });
+
             } else {
                 // For regular channels, just update the single message
                 debug.log('Channel', 'Processing channel read receipt', { MessageID, UserID });
