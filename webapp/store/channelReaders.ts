@@ -77,7 +77,8 @@ const channelReadersSlice = createSlice({
                 postId,
                 userId,
                 isDM,
-                beforeState: state[channelId]?.[postId]
+                beforeState: state[channelId]?.[postId],
+                timestamp: new Date().toISOString()
             });
 
             if (!state[channelId]) {
@@ -107,9 +108,15 @@ const channelReadersSlice = createSlice({
             console.log('✅ [Redux] Reader added:', {
                 channelId,
                 postId,
-                readers: state[channelId][postId],
-                isDM
+                afterState: state[channelId][postId],
+                isDM,
+                timestamp: new Date().toISOString()
             });
+            
+            // Add debug hook for testing
+            if ((window as any).__RR_DEBUG__) {
+                console.log('🔍 [Redux Debug] Full channel state after update:', JSON.parse(JSON.stringify(state[channelId])));
+            }
         },
     },
 });
