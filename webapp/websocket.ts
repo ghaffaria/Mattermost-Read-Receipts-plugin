@@ -21,13 +21,10 @@ const CHANNEL_READERS_EVENT = 'custom_mattermost-readreceipts_channel_readers';
 
 const debug = {
     log: (message: string, data?: any) => {
-        console.log(`🔔 [RR WebSocket] ${message}`, data || '');
+        console.log(`[RR WebSocket] ${message}`, data);
     },
     error: (message: string, error?: any) => {
-        console.error(`❌ [RR WebSocket] ${message}`, error || '');
-    },
-    warn: (message: string, data?: any) => {
-        console.warn(`⚠️ [RR WebSocket] ${message}`, data || '');
+        console.error(`[RR WebSocket] ❌ ${message}`, error);
     }
 };
 
@@ -48,128 +45,73 @@ function isMattermostPost(obj: any): obj is MattermostPost {
 // Handle WebSocket events from Mattermost's native WebSocket system
 export function handleWebSocketEvent(dispatch: Dispatch) {
     return (msg: any) => {
-        const { data, event: eventType, broadcast } = msg;
-        
-        // Always log WebSocket events for debugging
-        debug.log(`Received WebSocket event: ${eventType}`, {
-            eventType,
-            hasData: !!data,
-            data,
-            broadcast,
-            timestamp: new Date().toISOString()
-        });
+        const { data, event: eventType } = msg;
+        if (!data) return;
 
-        if (!data) {
-            debug.warn('WebSocket event has no data', { eventType });
-            return;
-        }
+        const debug = {
+            log: (category: string, ...args: any[]) => {
+                if (window.__DEBUG_RR__?.verbose) {
+                    console.log(`[RR ${category}]`, ...args);
+                }
+            },
+            error: (...args: any[]) => console.error('[RR Error]', ...args)
+        };
 
         if (eventType === READ_RECEIPT_EVENT) {
-            debug.log('Processing READ_RECEIPT event', data);
-            
-            const { MessageID, UserID, ChannelID, IsDM, ReaderIDs, Timestamp } = data;
-            
-            if (!MessageID || !UserID) {
-                debug.error('Invalid read receipt data - missing required fields', data);
+            // The data object from the WebSocket message includes:
+            // MessageID, UserID (who performed the read), ChannelID, IsDM (from server), ReaderIDs (array of all users who read this post)
+            const { MessageID, UserID, ChannelID, IsDM, ReaderIDs } = data;
+
+            if (!MessageID || !UserID || !ReaderIDs) { // Ensure ReaderIDs is present
+                debug.error('Invalid read receipt data from WebSocket:', data);
                 return;
             }
 
-            // Get channel type from Mattermost store if not provided
+            // Determine if it's a DM channel more reliably
             const store = (window as any).store;
-            const channel = store?.getState()?.entities?.channels?.channels?.[ChannelID];
-            const isDM = IsDM || channel?.type === 'D';
+            const channelInfo = store?.getState()?.entities?.channels?.channels?.[ChannelID];
+            const isActuallyDM = IsDM || channelInfo?.type === 'D';
 
-            debug.log(`Read receipt for ${isDM ? 'DM' : 'channel'}`, {
-                MessageID,
-                UserID,
-                ChannelID,
-                isDM,
-                ReaderIDs,
-                Timestamp
-            });
-
-            if (isDM) {
-                // For DMs, trigger a full channel state sync
-                debug.log('Triggering DM channel state sync', { ChannelID });
-                
-                // CRITICAL: For DMs, we need to update the Redux state immediately
-                debug.log('📝 [WebSocket] Dispatching addReader for DM', {
-                    channelId: ChannelID,
-                    postId: MessageID,
-                    userId: UserID,
-                    isDM: true,
-                    timestamp: new Date().toISOString()
-                });
-                
+            if (isActuallyDM) {
+                debug.log('DM', 'Processing DM read receipt via WebSocket', { MessageID, ReaderIDs, ChannelID });
                 dispatch(addReader({
                     channelId: ChannelID,
                     postId: MessageID,
-                    userId: UserID,
+                    userId: ReaderIDs.join(','), // Use all reader IDs from the event
                     isDM: true
                 }));
-                
-                // Also trigger a full sync to ensure consistency
-                import('./store').then(({ loadInitialReceipts }) => {
-                    loadInitialReceipts(ChannelID, dispatch, false)
-                        .then(() => {
-                            debug.log('DM channel state sync completed', { ChannelID });
-                        })
-                        .catch(error => {
-                            debug.error('Failed to sync DM channel state:', error);
-                        });
-                }).catch(error => {
-                    debug.error('Failed to import store module:', error);
-                });
-
             } else {
-                // For regular channels, update the single message
-                debug.log('Updating single message read receipt', { MessageID, UserID });
-                
+                // For regular channels, also use ReaderIDs for consistency
+                debug.log('Channel', 'Processing channel read receipt via WebSocket', { MessageID, ReaderIDs, ChannelID });
                 dispatch(addReader({
                     channelId: ChannelID,
                     postId: MessageID,
-                    userId: UserID,
+                    userId: ReaderIDs.join(','), // Use all reader IDs from the event
                     isDM: false
                 }));
             }
         }
         
         if (eventType === CHANNEL_READERS_EVENT) {
-            debug.log('Processing CHANNEL_READERS event', data);
-            
             const { ChannelID, LastPostID, UserIDs } = data;
-            
-            if (!ChannelID || !LastPostID || !Array.isArray(UserIDs)) {
-                debug.error('Invalid channel readers data - missing required fields', data);
-                return;
-            }
-
-            const store = (window as any).store;
-            const channel = store?.getState()?.entities?.channels?.channels?.[ChannelID];
-            const isDM = channel?.type === 'D';
-
-            debug.log('Channel readers update', {
-                ChannelID,
-                LastPostID,
-                UserIDs,
-                isDM,
-                userCount: UserIDs.length
-            });
-            
-            // For channel readers, we might get multiple user IDs
-            UserIDs.forEach((userId: string) => {
+            if (ChannelID && LastPostID && Array.isArray(UserIDs)) {
+                const store = (window as any).store;
+                const channel = store?.getState()?.entities?.channels?.channels?.[ChannelID];
+                
                 dispatch(addReader({
                     channelId: ChannelID,
                     postId: LastPostID,
-                    userId: userId,
-                    isDM: isDM
+                    userId: UserIDs.join(','),
+                    isDM: channel?.type === 'D'
                 }));
-            });
 
-            debug.log('Channel readers update completed', {
-                channelId: ChannelID,
-                readers: UserIDs
-            });
+                debug.log('Channel', 'Updated channel readers', {
+                    channelId: ChannelID,
+                    readers: UserIDs
+                });
+            } else {
+                debug.error('Invalid channel readers data:', data);
+            }
         }
     };
 }
