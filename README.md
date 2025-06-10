@@ -1,5 +1,7 @@
 # Mattermost Read Receipts Plugin
 
+
+
 WhatsApp / Telegram style "Seen by ..." indicators for every post in Mattermost. Get real-time visibility into who has read messages in your channels.
 
 <p align="center">
