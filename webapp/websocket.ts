@@ -58,36 +58,35 @@ export function handleWebSocketEvent(dispatch: Dispatch) {
         };
 
         if (eventType === READ_RECEIPT_EVENT) {
+            // The data object from the WebSocket message includes:
+            // MessageID, UserID (who performed the read), ChannelID, IsDM (from server), ReaderIDs (array of all users who read this post)
             const { MessageID, UserID, ChannelID, IsDM, ReaderIDs } = data;
-            if (!MessageID || !UserID) {
-                debug.error('Invalid read receipt data:', data);
+
+            if (!MessageID || !UserID || !ReaderIDs) { // Ensure ReaderIDs is present
+                debug.error('Invalid read receipt data from WebSocket:', data);
                 return;
             }
 
-            // Get channel type from Mattermost store
+            // Determine if it's a DM channel more reliably
             const store = (window as any).store;
-            const channel = store?.getState()?.entities?.channels?.channels?.[ChannelID];
-            const isDM = IsDM || channel?.type === 'D';
+            const channelInfo = store?.getState()?.entities?.channels?.channels?.[ChannelID];
+            const isActuallyDM = IsDM || channelInfo?.type === 'D';
 
-            if (isDM) {
-                debug.log('DM', 'Processing DM read receipt', { MessageID, UserID, ChannelID });
-                
-                // For DMs, trigger a full channel state sync
-                import('./store').then(({ loadInitialReceipts }) => {
-                    loadInitialReceipts(ChannelID, dispatch, false).catch(error => {
-                        debug.error('Failed to sync DM channel state:', error);
-                    });
-                }).catch(error => {
-                    debug.error('Failed to import store module:', error);
-                });
-
-            } else {
-                // For regular channels, just update the single message
-                debug.log('Channel', 'Processing channel read receipt', { MessageID, UserID });
+            if (isActuallyDM) {
+                debug.log('DM', 'Processing DM read receipt via WebSocket', { MessageID, ReaderIDs, ChannelID });
                 dispatch(addReader({
                     channelId: ChannelID,
                     postId: MessageID,
-                    userId: UserID,
+                    userId: ReaderIDs.join(','), // Use all reader IDs from the event
+                    isDM: true
+                }));
+            } else {
+                // For regular channels, also use ReaderIDs for consistency
+                debug.log('Channel', 'Processing channel read receipt via WebSocket', { MessageID, ReaderIDs, ChannelID });
+                dispatch(addReader({
+                    channelId: ChannelID,
+                    postId: MessageID,
+                    userId: ReaderIDs.join(','), // Use all reader IDs from the event
                     isDM: false
                 }));
             }

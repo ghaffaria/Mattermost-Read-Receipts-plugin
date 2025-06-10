@@ -261,8 +261,8 @@ func (p *Plugin) logError(msg string, kv ...interface{}) {
 
 // WebSocket event names (single source of truth)
 const (
-	EventReadReceipt    = "custom_mattermost-readreceipts_read_receipt"
-	EventChannelReaders = "custom_mattermost-readreceipts_channel_readers"
+	EventReadReceipt    = "read_receipt"
+	EventChannelReaders = "channel_readers"
 )
 
 // MessageHasBeenPosted marks the sender as having read their own post and

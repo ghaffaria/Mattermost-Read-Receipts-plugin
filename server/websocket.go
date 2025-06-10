@@ -6,8 +6,8 @@ import (
 
 // WebSocket event names
 const (
-	WebSocketEventReadReceipt    = "custom_mattermost-readreceipts_read_receipt"
-	WebSocketEventChannelReaders = "custom_mattermost-readreceipts_channel_readers"
+	WebSocketEventReadReceipt    = "read_receipt"
+	WebSocketEventChannelReaders = "channel_readers"
 )
 
 // PublishReadReceipt publishes a WebSocket event when a message is read
