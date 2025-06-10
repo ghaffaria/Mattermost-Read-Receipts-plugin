@@ -1,6 +1,6 @@
 import { configureStore, combineReducers } from '@reduxjs/toolkit';
 import channelReadersReducer from './channelReaders';
-import { loadChannelReads } from '../store'; // fallback to original, since not exported from channelReaders
+import { loadChannelReads } from '../actions/channel'; // Corrected import path
 import type { RootState } from './types';
 import { getPluginStore } from './pluginStore'; // use getPluginStore, but alias to getStore for code compatibility
 
@@ -36,9 +36,10 @@ export const ensureChannelReadsOnSwitch = (mmStore: any) => {
         const chan = mmStore.getState().entities.channels.currentChannelId;
         if (chan && chan !== (window as any).__lastCRChan) {
             const pluginStore = getPluginStore();
-            if (pluginStore) {
-                // ✅ Channel switching should NOT trigger "Seen by" UI updates (isInitialLoad: true)
-                loadChannelReads(chan, true);
+            if (pluginStore && pluginStore.dispatch) {
+                // Dispatch the thunk with the channelId
+                // Assuming 'loadChannelReads' is the thunk action creator itself.
+                pluginStore.dispatch(loadChannelReads({ channelId: chan }));
             }
             (window as any).__lastCRChan = chan;
         }

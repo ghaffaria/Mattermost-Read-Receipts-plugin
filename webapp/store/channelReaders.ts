@@ -56,13 +56,20 @@ const channelReadersSlice = createSlice({
                 state[channelId] = {};
             }
 
-            console.log('🔄 [Redux] Processing setReaders:', {
+            console.log('🔄 [Redux] Processing setReaders (merging):', {
                 channelId,
                 payloadSize: Object.keys(payload).length
             });
 
-            Object.entries(payload).forEach(([postId, userIds]) => {
-                state[channelId][postId] = userIds;
+            Object.entries(payload).forEach(([postId, incomingUserIds]) => {
+                // Ensure there's an array to merge into
+                if (!state[channelId][postId]) {
+                    state[channelId][postId] = [];
+                }
+
+                const existingReaders = new Set(state[channelId][postId]);
+                incomingUserIds.forEach(id => existingReaders.add(id));
+                state[channelId][postId] = Array.from(existingReaders);
             });
         },
 
