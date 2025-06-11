@@ -1,4 +1,3 @@
-// webapp/actions/channel.ts
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import { setReaders } from '../store/channelReaders';
 

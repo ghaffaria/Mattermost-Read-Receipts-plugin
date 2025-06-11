@@ -1,10 +1,9 @@
-// webapp/store/index.ts
-import { configureStore, combineReducers, ThunkDispatch, AnyAction } from '@reduxjs/toolkit'; // Added ThunkDispatch, AnyAction
+import { configureStore, combineReducers } from '@reduxjs/toolkit';
 import channelReadersReducer from './channelReaders';
 // import { loadChannelReads } from '../store'; // fallback to original, since not exported from channelReaders
 import { loadChannelReaders } from '../actions/channel';
-import type { RootState } from './types'; // This is RootState for the reduxStore in this file
-import { getPluginStore, RootState as PluginSpecificRootState } from './pluginStore'; // Import RootState from pluginStore as PluginSpecificRootState
+import type { RootState } from './types';
+import { getPluginStore } from './pluginStore'; // use getPluginStore, but alias to getStore for code compatibility
 
 // Combine our reducers
 const rootReducer = combineReducers({
@@ -19,7 +18,7 @@ const reduxStore = configureStore({
 
 // Export types
 export type { RootState };
-export type AppDispatch = typeof reduxStore.dispatch;
+export type AppDispatch = any;
 
 // Re-export channelReaders actions and selectors
 export * from './channelReaders';
@@ -39,10 +38,10 @@ export const ensureChannelReadsOnSwitch = (mmStore: any) => {
         if (currentChannelId && currentChannelId !== (window as any).__lastCRChan) {
             const pluginStore = getPluginStore(); // Get our plugin's store instance
             if (pluginStore && pluginStore.dispatch) { // Ensure store and dispatch are available
+                // Call the correctly imported async thunk
+                // The thunk expects an object like { channelId: string; sincePostId?: string }
                 console.log(`[ReadReceipts] Switching to channel ${currentChannelId}, dispatching loadChannelReaders.`);
-                // Explicitly cast pluginStore.dispatch to a ThunkDispatch for the plugin's store
-                const dispatch = pluginStore.dispatch as ThunkDispatch<PluginSpecificRootState, unknown, AnyAction>;
-                dispatch(loadChannelReaders({ channelId: currentChannelId }));
+                pluginStore.dispatch(loadChannelReaders({ channelId: currentChannelId }));
             } else {
                 console.error('[ReadReceipts] Plugin store or dispatch not available in ensureChannelReadsOnSwitch.');
             }

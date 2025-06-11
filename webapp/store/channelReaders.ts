@@ -1,4 +1,3 @@
-// webapp/store/channelReaders.ts
 import { createSlice, PayloadAction, createSelector } from '@reduxjs/toolkit';
 import { RootState } from './types';
 
