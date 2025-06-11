@@ -595,7 +595,8 @@ func (p *Plugin) getSinceMillis(r *http.Request) (int64, error) {
 	if sinceStr != "" {
 		sinceMs, err := strconv.ParseInt(sinceStr, 10, 64)
 		if err != nil {
-			return 0, fmt.Errorf("invalid since parameter")
+			// Return an error if 'since' is provided but invalid
+			return 0, fmt.Errorf("invalid since parameter: %w", err)
 		}
 		return sinceMs, nil
 	}
@@ -604,11 +605,18 @@ func (p *Plugin) getSinceMillis(r *http.Request) (int64, error) {
 	if postID != "" {
 		post, err := p.API.GetPost(postID)
 		if err != nil {
-			return 0, fmt.Errorf("invalid post ID: %w", err)
+			// Return an error if 'postID' is provided but invalid
+			return 0, fmt.Errorf("invalid postID parameter: %w", err)
 		}
-		// Post.CreateAt is already in milliseconds since epoch
 		return post.CreateAt, nil
 	}
 
-	return 0, fmt.Errorf("missing since or postID")
+	// If neither 'since' nor 'postID' is provided, default to 0 (fetch all/from beginning).
+	// Log this behavior for clarity during debugging.
+	// Using p.API.LogDebug directly as p.logDebug might not be accessible if p is nil in some contexts,
+	// though here it should be fine as it's a method on *Plugin.
+	// For safety, ensure p is not nil or use a global logger if available and appropriate.
+	// Assuming p is valid here as it's a plugin method.
+	p.API.LogDebug("[API] getSinceMillis: No 'since' or 'postID' query param provided, defaulting to 0 for fetching all readers.")
+	return 0, nil
 }

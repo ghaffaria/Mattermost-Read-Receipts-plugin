@@ -3,7 +3,7 @@
     "types": ["react", "react-dom", "./types/mattermost-webapp", "jest"],
     "target": "es5",
     "module": "CommonJS",
-    "lib": ["dom", "es2015", "es2016", "es2017"],
+    "lib": ["dom", "es2015", "es2016", "es2017", "es2019"],
     "jsx": "react",
     "strict": true,
     "noImplicitAny": true,

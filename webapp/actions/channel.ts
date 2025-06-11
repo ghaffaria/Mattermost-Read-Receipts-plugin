@@ -1,8 +1,12 @@
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import { setReaders } from '../store/channelReaders';
 
-interface ChannelReadersResponse {
-    [postId: string]: string[]; // Map of post IDs to arrays of user IDs
+// Add this interface if not already defined elsewhere and imported
+interface ReadEvent {
+    MessageID: string;
+    UserID: string;
+    ChannelID: string;
+    Timestamp: number;
 }
 
 /**
@@ -12,17 +16,13 @@ interface ChannelReadersResponse {
  */
 export const loadChannelReaders = createAsyncThunk(
     'channelReaders/loadChannelReaders',
-    async (params: { channelId: string; sincePostId?: string }, { dispatch }) => {
-        const { channelId, sincePostId } = params;
-        let url = `/plugins/mattermost-readreceipts/api/v1/read/channel/${channelId}`;
-        
-        if (sincePostId) {
-            url += `?since_post=${sincePostId}`;
-        }
+    async (params: { channelId: string; /* sincePostId is no longer used by this specific thunk */ }, { dispatch }) => {
+        const { channelId } = params;
+        // Changed API endpoint to fetch all read events for the channel
+        const url = `/plugins/mattermost-readreceipts/api/v1/receipts?channel_id=${encodeURIComponent(channelId)}`;
 
-        console.log('📥 [Channel Actions] Loading readers:', {
+        console.log('📥 [Channel Actions] Loading ALL read events for channel:', {
             channelId,
-            sincePostId,
             url
         });
 
@@ -31,35 +31,60 @@ export const loadChannelReaders = createAsyncThunk(
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',
+                    // Ensure standard Mattermost headers like X-Requested-With are included if needed by middleware
+                    'X-Requested-With': 'XMLHttpRequest' 
                 },
-                credentials: 'same-origin',
+                credentials: 'same-origin', // Or 'include' if necessary for your setup
             });
 
             if (!response.ok) {
-                throw new Error(`Server returned ${response.status}`);
+                throw new Error(`Server returned ${response.status} from ${url}`);
             }
 
-            const readers: ChannelReadersResponse = await response.json();
+            // API /api/v1/receipts returns ReadEvent[]
+            const events: ReadEvent[] = await response.json();
             
-            console.log('✅ [Channel Actions] Loaded readers:', {
+            console.log('✅ [Channel Actions] Loaded raw read events:', {
                 channelId,
-                postCount: Object.keys(readers).length,
-                readers
+                eventCount: events.length
             });
 
-            // Update Redux store with the loaded readers
+            // Transform ReadEvent[] to { [postId: string]: string[] }
+            const transformedPayload: { [postId: string]: string[] } = {};
+            for (const event of events) {
+                if (!transformedPayload[event.MessageID]) {
+                    transformedPayload[event.MessageID] = [];
+                }
+                // Ensure a user is added only once per message
+                if (!transformedPayload[event.MessageID].includes(event.UserID)) {
+                    transformedPayload[event.MessageID].push(event.UserID);
+                }
+            }
+            
+            console.log('🔄 [Channel Actions] Transformed payload for setReaders:', {
+                channelId,
+                postCount: Object.keys(transformedPayload).length,
+                // Example: For a few posts if the payload is large
+                samplePayload: Object.fromEntries(Object.entries(transformedPayload).slice(0, 3)) 
+            });
+
+            // Update Redux store with the transformed payload
             dispatch(setReaders({
                 channelId,
-                payload: readers
+                payload: transformedPayload 
             }));
 
-            return readers;
+            // The thunk should return a meaningful value, here we return the transformed payload
+            return transformedPayload; 
         } catch (error) {
-            console.error('❌ [Channel Actions] Failed to load readers:', {
+            const errorMessage = error instanceof Error ? error.message : String(error);
+            console.error('❌ [Channel Actions] Failed to load and transform channel read events:', {
                 channelId,
-                error: error instanceof Error ? error.message : String(error)
+                error: errorMessage,
+                url,
             });
-            throw error;
+            // Dispatching a rejected action is handled automatically by createAsyncThunk
+            throw error; 
         }
     }
 );
