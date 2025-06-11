@@ -128,16 +128,37 @@ class StateManager {
 
     setCurrentChannel(channelId: string): void {
         if (this.currentChannelId !== channelId) {
+            const oldChannelId = this.currentChannelId;
             this.currentChannelId = channelId;
-            // Load channel data if initialized
-            if (this.initialized && this.dispatch) {
-                Promise.all([
-                    loadInitialReceipts(channelId, this.dispatch, true),
-                    loadChannelReads(channelId, true)
-                ]).catch(error => {
-                    console.error('❌ [StateManager] Failed to load channel data:', error);
-                });
+            console.log(`DEBUG: [StateManager.setCurrentChannel] Channel changed from ${oldChannelId} to ${channelId}`);
+
+            // Check if the new mechanism (ensureChannelReadsOnSwitch) is already active.
+            if ((window as any).__ensuredCRSwitch) {
+                console.log('INFO: [StateManager.setCurrentChannel] New channel switch logic is active via ensureChannelReadsOnSwitch. Skipping data load for channel:', channelId);
+                return; 
             }
+
+            // Aggressively disable data loading from this legacy path for diagnostics
+            console.log('WARN: [StateManager.setCurrentChannel] Legacy data load path was reached for channel:', channelId, 'BUT DATA LOADING IS CURRENTLY COMMENTED OUT FOR DIAGNOSTICS.');
+            /*
+            // Load channel data if initialized AND the new switch logic isn't active
+            if (this.initialized && this.dispatch) { 
+                console.log('WARN: [StateManager.setCurrentChannel] Legacy data load triggered for channel:', channelId, '. This path should ideally not be taken if ensureChannelReadsOnSwitch is active.');
+                Promise.all([
+                    loadInitialReceipts(channelId, this.dispatch, true), // from legacyStore.ts
+                    loadChannelReads(channelId, true) // from ../store -> actions/channel.ts
+                ]).catch(error => {
+                    console.error('❌ [StateManager] Failed to load channel data via legacy path:', error);
+                });
+            } else {
+                if (!this.initialized) {
+                    console.log('DEBUG: [StateManager.setCurrentChannel] StateManager not initialized, data loading skipped for channel:', channelId);
+                }
+                if (!this.dispatch) {
+                    console.log('DEBUG: [StateManager.setCurrentChannel] Dispatch not available, data loading skipped for channel:', channelId);
+                }
+            }
+            */
         }
     }
 

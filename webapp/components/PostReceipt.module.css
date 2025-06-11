@@ -1,4 +1,29 @@
+/* Mattermost-Read-Receipts/webapp/components/PostReceipt.module.css */
+
 .seen-skeleton {
   opacity: 0.25;
   margin-left: 4px;
+}
+
+.postReceiptContainer {
+  /* No specific styles needed here for now, but keeping it to avoid empty ruleset */
+  /* This class wraps the entire receipt component */
+  display: contents; /* Ensures the container itself doesn't affect layout much, but still allows class to be present */
+}
+
+.postReceipt {
+  /* Styles for the inner div containing the "Seen by" text */
+  font-size: 11px;
+  color: rgba(63, 67, 80, 0.72);
+  padding: 4px 0;
+  margin-top: 2px;
+  display: inline-flex;
+  align-items: center;
+}
+
+.readReceiptText {
+  /* Styles for the actual text within the receipt */
+  /* Currently no specific styles, but keeping it to avoid empty ruleset */
+  /* You can add text-specific styles here if needed */
+  font-weight: normal; /* Example to avoid empty ruleset warning */
 }

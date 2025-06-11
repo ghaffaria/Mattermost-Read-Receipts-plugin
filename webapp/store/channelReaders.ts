@@ -1,3 +1,4 @@
+// webapp/store/channelReaders.ts
 import { createSlice, PayloadAction, createSelector } from '@reduxjs/toolkit';
 import { RootState } from './types';
 
@@ -56,14 +57,30 @@ const channelReadersSlice = createSlice({
                 state[channelId] = {};
             }
 
-            console.log('🔄 [Redux] Processing setReaders:', {
+            // This log should already exist or be similar
+            const existingLogInfo = {
                 channelId,
-                payloadSize: Object.keys(payload).length
-            });
+                payloadSize: Object.keys(payload).length,
+                // Log a few sample postIDs from the payload to see what's coming in
+                samplePostIdsFromPayload: Object.keys(payload).slice(0, 5) 
+            };
+            console.log('🔄 [Redux] Processing setReaders:', existingLogInfo);
 
             Object.entries(payload).forEach(([postId, userIds]) => {
                 state[channelId][postId] = userIds;
             });
+
+            // --- BEGIN NEW DEBUG LOG ---
+            // The user should replace 'MESSAGE_ID_FROM_ALI_REPLACE_THIS' with the actual ID they are testing.
+            // For example, '59x6s4dhojg1pp3sxgzqj59cya' from previous logs.
+            const targetMessageIdForDebug = '59x6s4dhojg1pp3sxgzqj59cya'; // Placeholder, user should use actual ID.
+            if (payload[targetMessageIdForDebug] && channelId === 'ybkrid3x73yw7cep9mptu16nwy') { // Check if the target message is in this update and for the target channel
+                console.log(`DEBUG_RR_STATE [setReaders] Readers for post ${targetMessageIdForDebug} in channel ${channelId} AFTER update:`, JSON.parse(JSON.stringify(state[channelId][targetMessageIdForDebug])) );
+            }
+            if (state[channelId] && state[channelId][targetMessageIdForDebug]) {
+                 console.log(`DEBUG_RR_STATE_GENERIC [setReaders] Readers for post ${targetMessageIdForDebug} in channel ${channelId} (generic check):`, JSON.parse(JSON.stringify(state[channelId][targetMessageIdForDebug])) );
+            }
+            // --- END NEW DEBUG LOG ---
         },
 
         addReader: (
