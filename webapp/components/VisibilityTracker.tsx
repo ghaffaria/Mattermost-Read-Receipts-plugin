@@ -219,6 +219,27 @@ const VisibilityTracker: FC<VisibilityTrackerProps> = ({
             });
             observerRef.current.observe(elementRef.current);
             console.log(`👀 [VisibilityTracker] Observer attached to element for ${messageId}`);
+            
+            // IMPORTANT: Check if element is immediately visible after navigation
+            // This handles the case where Admin returns to DM and messages are already in view
+            const rect = elementRef.current.getBoundingClientRect();
+            const isImmediatelyVisible = (
+                rect.top >= 0 &&
+                rect.left >= 0 &&
+                rect.bottom <= (window.innerHeight || document.documentElement.clientHeight) &&
+                rect.right <= (window.innerWidth || document.documentElement.clientWidth) &&
+                rect.width > 0 &&
+                rect.height > 0
+            );
+            
+            if (isImmediatelyVisible && isTabVisible.current && !hasSent) {
+                console.log(`⚡ [VisibilityTracker] Message ${messageId} is immediately visible after setup, starting timer`);
+                isElementVisible.current = true;
+                if (!visibilityStartTime.current) {
+                    visibilityStartTime.current = Date.now();
+                    timerRef.current = setInterval(checkVisibilityDuration, 1000);
+                }
+            }
         }
         // Set up tab visibility listener
         document.addEventListener('visibilitychange', handleTabVisibilityChange);

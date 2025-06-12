@@ -42,3 +42,4 @@ comprehensive-dm-test.js
 dm-threshold-test.js
 step-by-step-dm-test.js
 simple-dm-test.js
+*.py

@@ -57,6 +57,11 @@ export function handleWebSocketEvent(dispatch: Dispatch) {
             error: (...args: any[]) => console.error('[RR Error]', ...args)
         };
 
+        // Always log WebSocket events for debugging the channel switching issue
+        if (eventType === READ_RECEIPT_EVENT || eventType === CHANNEL_READERS_EVENT) {
+            console.log(`📡 [WebSocket] Received ${eventType}:`, data);
+        }
+
         if (eventType === READ_RECEIPT_EVENT) {
             // The data object from the WebSocket message includes:
             // MessageID, UserID (who performed the read), ChannelID, IsDM (from server), ReaderIDs (array of all users who read this post)

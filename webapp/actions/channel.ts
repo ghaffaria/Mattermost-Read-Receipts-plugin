@@ -1,5 +1,5 @@
 import { createAsyncThunk } from '@reduxjs/toolkit';
-import { setReaders } from '../store/channelReaders';
+import { setReaders, addReader } from '../store/channelReaders';
 
 // Add this interface if not already defined elsewhere and imported
 interface ReadEvent {
@@ -61,18 +61,23 @@ export const loadChannelReaders = createAsyncThunk(
                 }
             }
             
-            console.log('🔄 [Channel Actions] Transformed payload for setReaders:', {
+            console.log('🔄 [Channel Actions] Transformed payload for addReader (preserving existing state):', {
                 channelId,
                 postCount: Object.keys(transformedPayload).length,
                 // Example: For a few posts if the payload is large
                 samplePayload: Object.fromEntries(Object.entries(transformedPayload).slice(0, 3)) 
             });
 
-            // Update Redux store with the transformed payload
-            dispatch(setReaders({
-                channelId,
-                payload: transformedPayload 
-            }));
+            // Update Redux store by adding readers to preserve existing state
+            // This prevents overwriting recent WebSocket updates
+            for (const [postId, userIds] of Object.entries(transformedPayload)) {
+                dispatch(addReader({
+                    channelId,
+                    postId,
+                    userId: userIds.join(','),
+                    isDM: false // Will be corrected by the addReader logic if needed
+                }));
+            }
 
             // The thunk should return a meaningful value, here we return the transformed payload
             return transformedPayload; 
