@@ -444,7 +444,18 @@ interface ChannelRead {
     last_seen_at: number;
 }
 
+// Track concurrent requests to prevent race conditions
+const loadingChannels = new Set<string>();
+
 export const loadInitialReceipts = async (channelId: string, dispatch?: Dispatch, isInitialLoad: boolean = true): Promise<void> => {
+    // Prevent concurrent loads for the same channel
+    if (loadingChannels.has(channelId)) {
+        console.log(`⏸️ [Store] Channel ${channelId} already loading, skipping duplicate request`);
+        return;
+    }
+    
+    loadingChannels.add(channelId);
+    
     console.log('🔄 [Store] Loading receipts for channel:', { channelId, isInitialLoad });
     
     try {
@@ -563,20 +574,22 @@ export const loadInitialReceipts = async (channelId: string, dispatch?: Dispatch
         // REDUX TRACE - Initial Load Processing
      
 
-        // Build setReaders payload with detailed logging
-        const setReadersPayload: Record<string, string[]> = {};
-        messageReceiptsMap.forEach((users, messageId) => {
-            const userArray = Array.from(users);
-            setReadersPayload[messageId] = userArray;
-          
-        });
-
-        // Final payload verification before dispatch
-        
-
+        // Use individual addReader dispatches to preserve existing WebSocket-received state
+        // This prevents overwriting recent read receipts that arrived via WebSocket
         if (dispatch) {
-            dispatch(setReaders({ channelId, payload: setReadersPayload }));
-            //console.log('識 [Redux Trace] setReaders dispatch complete for channel:', channelId);
+            messageReceiptsMap.forEach((users, messageId) => {
+                const userArray = Array.from(users);
+                // Dispatch each reader individually to preserve existing state
+                for (const userId of userArray) {
+                    dispatch(addReader({
+                        channelId,
+                        postId: messageId,
+                        userId,
+                        isDM: false // Will be corrected by addReader logic if needed
+                    }));
+                }
+            });
+            console.log('✅ [Store] Added readers individually to preserve WebSocket state for channel:', channelId);
         }
 
         console.log('💾 [Store] Updated maps:', {
@@ -620,6 +633,9 @@ export const loadInitialReceipts = async (channelId: string, dispatch?: Dispatch
             error
         });
         throw error;
+    } finally {
+        // Always remove from loading set
+        loadingChannels.delete(channelId);
     }
 };
 
@@ -654,7 +670,18 @@ interface ChannelRead {
     last_seen_at: number;
 }
 
+// Track concurrent channel reads requests
+const loadingChannelReads = new Set<string>();
+
 export const loadChannelReads = async (channelId: string, isInitialLoad: boolean = true): Promise<void> => {
+    // Prevent concurrent loads for the same channel
+    if (loadingChannelReads.has(channelId)) {
+        console.log(`⏸️ [Store] Channel reads for ${channelId} already loading, skipping duplicate request`);
+        return;
+    }
+    
+    loadingChannelReads.add(channelId);
+    
     try {
         console.log('📖 [Store] Loading channel reads:', { channelId, isInitialLoad });
         
@@ -751,6 +778,10 @@ export const loadChannelReads = async (channelId: string, isInitialLoad: boolean
             channelId,
             error
         });
+        throw error;
+    } finally {
+        // Always remove from loading set
+        loadingChannelReads.delete(channelId);
     }
 };
 

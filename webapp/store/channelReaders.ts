@@ -19,7 +19,7 @@ export interface AddReaderPayload {
 // Ensure initialState is an empty object
 const initialState: ChannelReadersState = {};
 
-// Memoized selector with debug logging
+// Memoized selector with debug logging and race condition protection
 export const selectReaders = createSelector(
     [
         (state: RootState) => state.channelReaders,
@@ -27,14 +27,30 @@ export const selectReaders = createSelector(
         (_: RootState, _channelId: string, postId: string) => postId
     ],
     (channelReaders: ChannelReadersState, channelId: string, postId: string): string[] => {
-        console.log('🔍 [Redux Selector] Selecting readers:', {
-            channelId,
-            postId,
-            hasChannel: !!channelReaders[channelId],
-            hasPost: channelReaders[channelId]?.[postId] !== undefined,
-            readerCount: channelReaders[channelId]?.[postId]?.length || 0
-        });
-        return channelReaders?.[channelId]?.[postId] ?? [];
+        // Get readers with defensive checks
+        const channelData = channelReaders?.[channelId];
+        const readers = channelData?.[postId] ?? [];
+        
+        // Enhanced logging for debugging channel switch issues
+        const isTargetMessage = postId === 'fpb56zb5ptdemeywszqqo5tywa';
+        const isTargetChannel = channelId === 'ybkrid3x73yw7cep9mptu16nwy';
+        
+        if (isTargetMessage || (window as any).__RR_DEBUG__) {
+            console.log('🔍 [Redux Selector] Selecting readers:', {
+                channelId,
+                postId,
+                hasChannel: !!channelData,
+                hasPost: !!channelData?.[postId],
+                readerCount: readers.length,
+                readers: readers,
+                isTargetMessage,
+                isTargetChannel,
+                fullChannelState: isTargetMessage ? JSON.stringify(channelData, null, 2) : 'omitted',
+                timestamp: new Date().toISOString()
+            });
+        }
+        
+        return readers;
     }
 );
 
@@ -48,9 +64,10 @@ const channelReadersSlice = createSlice({
             action: PayloadAction<{
                 channelId: string;
                 payload: { [postId: string]: string[] };
+                isDM?: boolean;
             }>
         ) => {
-            const { channelId, payload } = action.payload;
+            const { channelId, payload, isDM } = action.payload;
             
             if (!state[channelId]) {
                 state[channelId] = {};
@@ -60,10 +77,11 @@ const channelReadersSlice = createSlice({
             const existingLogInfo = {
                 channelId,
                 payloadSize: Object.keys(payload).length,
+                isDM,
                 // Log a few sample postIDs from the payload to see what's coming in
                 samplePostIdsFromPayload: Object.keys(payload).slice(0, 5) 
             };
-            console.log('🔄 [Redux] Processing setReaders:', existingLogInfo);
+            console.log('🔄 [Redux] Processing setReaders (DM-aware):', existingLogInfo);
 
             Object.entries(payload).forEach(([postId, userIds]) => {
                 state[channelId][postId] = userIds;
@@ -88,6 +106,12 @@ const channelReadersSlice = createSlice({
         ) => {
             const { channelId, postId, userId, isDM } = action.payload;
             
+            // Ensure valid input data
+            if (!channelId || !postId || !userId) {
+                console.error('❌ [Redux] Invalid addReader payload:', action.payload);
+                return;
+            }
+            
             console.log('➕ [Redux] Processing addReader:', {
                 channelId,
                 postId,
@@ -105,18 +129,25 @@ const channelReadersSlice = createSlice({
             }
 
             // Split userId if it's a comma-separated string (legacy format)
-            const userIds = userId.includes(',') ? userId.split(',') : [userId];
+            const userIds = userId.includes(',') ? userId.split(',').filter(id => id.trim()) : [userId];
+            
+            // Track if any changes were made
+            let hasChanges = false;
 
             // For DMs, merge the reader without duplicates
             if (isDM) {
                 const existingReaders = new Set(state[channelId][postId]);
-                userIds.forEach(id => existingReaders.add(id));
+                const originalSize = existingReaders.size;
+                userIds.forEach(id => existingReaders.add(id.trim()));
                 state[channelId][postId] = Array.from(existingReaders);
+                hasChanges = existingReaders.size > originalSize;
             } else {
                 // For regular channels, just add if not already present
                 userIds.forEach(id => {
-                    if (!state[channelId][postId].includes(id)) {
-                        state[channelId][postId].push(id);
+                    const trimmedId = id.trim();
+                    if (!state[channelId][postId].includes(trimmedId)) {
+                        state[channelId][postId].push(trimmedId);
+                        hasChanges = true;
                     }
                 });
             }
@@ -126,6 +157,7 @@ const channelReadersSlice = createSlice({
                 postId,
                 afterState: state[channelId][postId],
                 isDM,
+                hasChanges,
                 timestamp: new Date().toISOString()
             });
             

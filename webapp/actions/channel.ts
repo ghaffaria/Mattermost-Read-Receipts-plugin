@@ -9,6 +9,9 @@ interface ReadEvent {
     Timestamp: number;
 }
 
+// Track ongoing requests to prevent race conditions
+const ongoingRequests = new Set<string>();
+
 /**
  * Loads read receipts for messages in a channel.
  * @param channelId - The ID of the channel to load readers for
@@ -18,15 +21,24 @@ export const loadChannelReaders = createAsyncThunk(
     'channelReaders/loadChannelReaders',
     async (params: { channelId: string; /* sincePostId is no longer used by this specific thunk */ }, { dispatch }) => {
         const { channelId } = params;
+        
+        // Prevent duplicate requests for the same channel
+        if (ongoingRequests.has(channelId)) {
+            console.log(`⏸️ [Channel Actions] Request for channel ${channelId} already in progress, skipping duplicate`);
+            return {};
+        }
+        
+        ongoingRequests.add(channelId);
+        
         // Changed API endpoint to fetch all read events for the channel
         const url = `/plugins/mattermost-readreceipts/api/v1/receipts?channel_id=${encodeURIComponent(channelId)}`;
-
-        console.log('📥 [Channel Actions] Loading ALL read events for channel:', {
-            channelId,
-            url
-        });
-
+        
         try {
+            console.log('📥 [Channel Actions] Loading ALL read events for channel:', {
+                channelId,
+                url
+            });
+
             const response = await fetch(url, {
                 method: 'GET',
                 headers: {
@@ -61,23 +73,27 @@ export const loadChannelReaders = createAsyncThunk(
                 }
             }
             
-            console.log('🔄 [Channel Actions] Transformed payload for addReader (preserving existing state):', {
+            // Check if this is a DM channel for proper handling
+            const store = (window as any).store;
+            const channel = store?.getState()?.entities?.channels?.channels?.[channelId];
+            const isDM = channel?.type === 'D';
+            
+            console.log('🔄 [Channel Actions] Transformed payload for setReaders (full state replacement):', {
                 channelId,
                 postCount: Object.keys(transformedPayload).length,
+                isDM,
+                channelType: channel?.type,
                 // Example: For a few posts if the payload is large
                 samplePayload: Object.fromEntries(Object.entries(transformedPayload).slice(0, 3)) 
             });
 
-            // Update Redux store by adding readers to preserve existing state
-            // This prevents overwriting recent WebSocket updates
-            for (const [postId, userIds] of Object.entries(transformedPayload)) {
-                dispatch(addReader({
-                    channelId,
-                    postId,
-                    userId: userIds.join(','),
-                    isDM: false // Will be corrected by the addReader logic if needed
-                }));
-            }
+            // Update Redux store with complete state replacement
+            // This ensures consistent state regardless of any race conditions
+            dispatch(setReaders({
+                channelId,
+                payload: transformedPayload,
+                isDM // Include DM context for proper handling
+            }));
 
             // The thunk should return a meaningful value, here we return the transformed payload
             return transformedPayload; 
@@ -90,6 +106,9 @@ export const loadChannelReaders = createAsyncThunk(
             });
             // Dispatching a rejected action is handled automatically by createAsyncThunk
             throw error; 
+        } finally {
+            // Always remove from ongoing requests
+            ongoingRequests.delete(channelId);
         }
     }
 );

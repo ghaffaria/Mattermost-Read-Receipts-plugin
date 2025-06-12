@@ -32,16 +32,11 @@ class StateManager {
                 return;
             }
 
-            // Reset state on refresh
+            // Reset state on refresh - DISABLED to preserve WebSocket state
             if (stage === StateLoadStage.REFRESH) {
-                console.log('🔄 [StateManager] Refreshing state...');
-                // Clear current channel state
-                if (this.currentChannelId) {
-                    this.dispatch(setReaders({
-                        channelId: this.currentChannelId,
-                        payload: {}
-                    }));
-                }
+                console.log('🔄 [StateManager] Refresh detected - preserving existing WebSocket state');
+                // Do not clear state to preserve real-time WebSocket updates
+                // The loadInitialReceipts will merge new data with existing state
             }
 
             // Mark as initialized after first load
