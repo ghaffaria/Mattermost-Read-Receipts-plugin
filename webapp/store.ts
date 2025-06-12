@@ -64,15 +64,9 @@ export const setMattermostStore = (store: Store<MattermostState> | null) => {
         }
 
         mattermostStore = store;
-        console.log('✅ [Store] Initialized with Mattermost store:', {
-            hasStore: true,
-            userProfiles: Object.keys(state.entities.users.profiles).length
-        });
 
         // Load initial plugin config
-        fetchPluginConfig().then(() => {
-            console.log('⚙️ [Store] Plugin config loaded on initialization');
-        });
+        fetchPluginConfig();
 
         // Track seen posts to avoid duplicate processing
         const processedPosts = new Set<string>();
@@ -87,20 +81,10 @@ export const setMattermostStore = (store: Store<MattermostState> | null) => {
             const channel = channels[post.channel_id];
 
             if (channel?.type === 'D') { // Direct Message channel
-                console.log('📨 [Store] New DM message detected:', {
-                    postId: post.id,
-                    channelId: post.channel_id,
-                    timestamp: new Date().toISOString()
-                });
-                
                 // Debounce the channel state load to prevent multiple rapid API calls
                 debounceChannelLoad(post.channel_id, async () => {
                     try {
                         await loadInitialReceipts(post.channel_id, store.dispatch, false);
-                        console.log('✅ [Store] DM channel state loaded for new message:', {
-                            channelId: post.channel_id,
-                            postId: post.id
-                        });
                     } catch (error) {
                         console.error('❌ [Store] Failed to load DM channel state:', error);
                     }
@@ -138,7 +122,6 @@ export const waitForStoreInitialization = (maxWaitMs: number = 5000): Promise<bo
                 resolve(true);
                 return;
             }
-            console.log('⏳ [Store] Waiting for store initialization...');
         };
         
         const startTime = Date.now();
@@ -163,10 +146,6 @@ export const waitForStoreInitialization = (maxWaitMs: number = 5000): Promise<bo
 };
 
 export const getMattermostStore = (): Store<MattermostState> | null => {
-    if (!mattermostStore) {
-        console.warn('⚠️ [Store] Attempted to access uninitialized store - waiting...');
-        // Don't return immediately, let the caller handle this
-    }
     return mattermostStore;
 };
 
@@ -176,7 +155,6 @@ export const getMattermostStoreSafe = async (timeoutMs: number = 2000): Promise<
         return mattermostStore;
     }
     
-    console.log('⏳ [Store] Store not ready, waiting for initialization...');
     const isReady = await waitForStoreInitialization(timeoutMs);
     
     if (!isReady) {

@@ -24,7 +24,6 @@ export const loadChannelReaders = createAsyncThunk(
         
         // Prevent duplicate requests for the same channel
         if (ongoingRequests.has(channelId)) {
-            console.log(`⏸️ [Channel Actions] Request for channel ${channelId} already in progress, skipping duplicate`);
             return {};
         }
         
@@ -34,10 +33,6 @@ export const loadChannelReaders = createAsyncThunk(
         const url = `/plugins/mattermost-readreceipts/api/v1/receipts?channel_id=${encodeURIComponent(channelId)}`;
         
         try {
-            console.log('📥 [Channel Actions] Loading ALL read events for channel:', {
-                channelId,
-                url
-            });
 
             const response = await fetch(url, {
                 method: 'GET',
@@ -55,11 +50,6 @@ export const loadChannelReaders = createAsyncThunk(
 
             // API /api/v1/receipts returns ReadEvent[]
             const events: ReadEvent[] = await response.json();
-            
-            console.log('✅ [Channel Actions] Loaded raw read events:', {
-                channelId,
-                eventCount: events.length
-            });
 
             // Transform ReadEvent[] to { [postId: string]: string[] }
             const transformedPayload: { [postId: string]: string[] } = {};
@@ -78,15 +68,6 @@ export const loadChannelReaders = createAsyncThunk(
             const channel = store?.getState()?.entities?.channels?.channels?.[channelId];
             const isDM = channel?.type === 'D';
             
-            console.log('🔄 [Channel Actions] Transformed payload for setReaders (full state replacement):', {
-                channelId,
-                postCount: Object.keys(transformedPayload).length,
-                isDM,
-                channelType: channel?.type,
-                // Example: For a few posts if the payload is large
-                samplePayload: Object.fromEntries(Object.entries(transformedPayload).slice(0, 3)) 
-            });
-
             // Update Redux store with complete state replacement
             // This ensures consistent state regardless of any race conditions
             dispatch(setReaders({

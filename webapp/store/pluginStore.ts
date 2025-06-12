@@ -25,13 +25,9 @@ const isDevelopment = window.location.hostname === 'localhost' ||
 
 // Logger middleware for development
 const logger = (store: any) => (next: any) => (action: any) => {
-    if (isDevelopment) {
-        console.log('🔄 [Redux] Dispatching:', { type: action.type, payload: action.payload });
-    }
+  
     const result = next(action);
-    if (isDevelopment) {
-        console.log('💾 [Redux] Next State:', store.getState());
-    }
+    
     return result;
 };
 

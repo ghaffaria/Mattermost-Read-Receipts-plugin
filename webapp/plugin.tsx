@@ -74,8 +74,6 @@ export default class ReadReceiptPlugin {
         globalRegistry = registry;
         globalMattermostStore = mattermostStore;
         
-        console.log('🔌 [ReadReceiptPlugin] Initializing...');
-        
         try {
             if (!mattermostStore?.getState) {
                 console.error('❌ [ReadReceiptPlugin] Invalid Mattermost store:', mattermostStore);
@@ -95,32 +93,18 @@ export default class ReadReceiptPlugin {
             // CRITICAL: Register WebSocket handlers FIRST before any data loading
             // This ensures we don't miss any events during initialization
             try {
-                console.log('🌐 [ReadReceiptPlugin] Registering WebSocket handlers...');
-                
                 const wsHandler = handleWebSocketEvent(pluginGlobalStoreInstance.dispatch);
                 
                 // Create a comprehensive event handler that logs and processes events
                 const comprehensiveHandler = (event: any) => {
-                    console.log('🔔 [ReadReceiptPlugin] WebSocket event received:', {
-                        eventType: event?.event || 'unknown',
-                        data: event?.data,
-                        broadcast: event?.broadcast,
-                        timestamp: new Date().toISOString()
-                    });
-                    
                     // Always call the actual handler
                     return wsHandler(event);
                 };
                 
                 if (typeof registry.registerWebSocketEventHandler === 'function') {
                     // Register handlers for custom events
-                    console.log('📝 [ReadReceiptPlugin] Registering handler for:', WEBSOCKET_EVENT_READ_RECEIPT);
                     registry.registerWebSocketEventHandler(WEBSOCKET_EVENT_READ_RECEIPT, comprehensiveHandler);
-                    
-                    console.log('📝 [ReadReceiptPlugin] Registering handler for:', WEBSOCKET_EVENT_CHANNEL_READERS);
                     registry.registerWebSocketEventHandler(WEBSOCKET_EVENT_CHANNEL_READERS, comprehensiveHandler);
-                    
-                    console.log('✅ [ReadReceiptPlugin] WebSocket handlers registered successfully');
                 } else {
                     console.error('❌ [ReadReceiptPlugin] registerWebSocketEventHandler not available on registry');
                 }
@@ -142,7 +126,6 @@ export default class ReadReceiptPlugin {
 
             // Pre-load receipts for current channel if available
             if (currentChannelId) {
-                console.log('📥 [ReadReceiptPlugin] Pre-loading receipts for channel (initial load):', currentChannelId);
                 await Promise.all([
                     loadInitialReceipts(currentChannelId, pluginGlobalStoreInstance.dispatch, true).catch(err => {
                         console.error('❌ [ReadReceiptPlugin] Failed to load receipts:', err);
@@ -151,13 +134,11 @@ export default class ReadReceiptPlugin {
                         console.error('❌ [ReadReceiptPlugin] Failed to load channel reads:', err);
                     })
                 ]);
-                console.log('✅ [ReadReceiptPlugin] Pre-loaded receipts successfully (no UI updates triggered)');
             }
 
             // Register post component with error boundary
             try {
                 if ((registry as any).registerPostTypeComponent) {
-                    console.log('🧩 [ReadReceiptPlugin] Registering post component...');
                     (registry as any).registerPostTypeComponent(
                         (props: PostProps) => {
                             if (!pluginGlobalStoreInstance) {
@@ -176,7 +157,6 @@ export default class ReadReceiptPlugin {
                             );
                         }
                     );
-                    console.log('✅ [ReadReceiptPlugin] Post component registered');
                 }
             } catch (error) {
                 console.error('❌ [ReadReceiptPlugin] Error in registerPostTypeComponent:', error);

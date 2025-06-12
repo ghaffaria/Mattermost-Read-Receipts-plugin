@@ -38,23 +38,8 @@ const PostReceipt: FC<PostReceiptProps> = ({ post }): ReactElement | null => {
 
         const messageId = post.id;
         const readerIds = useSelector((state: RootState) => {
-            console.log('🔍 [PostReceipt] Selector execution:', {
-                postId: messageId,
-                isTargetPost: messageId === 'fpb56zb5ptdemeywszqqo5tywa',
-                channelId: post.channel_id,
-                reduxState: {
-                    hasChannelReaders: !!state.channelReaders,
-                    channelState: state.channelReaders[post.channel_id],
-                    postReaders: state.channelReaders[post.channel_id]?.[messageId]
-                }
-            });
             const readers = selectReaders(state, post.channel_id, messageId);
-            console.log('📊 [PostReceipt] Selected readers:', {
-                postId: messageId,
-                isTargetPost: messageId === 'fpb56zb5ptdemeywszqqo5tywa',
-                selectedReaders: readers,
-                channelReadersState: state.channelReaders[post.channel_id]
-            });
+            
             return readers;
         });
 
