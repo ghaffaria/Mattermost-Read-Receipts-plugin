@@ -197,6 +197,43 @@ export default class ReadReceiptPlugin {
                 );
             });
 
+            // CRITICAL FIX: Register a channel change listener to maintain state across navigation
+            console.log('🔄 [ReadReceiptPlugin] Setting up channel change persistence...');
+            
+            let lastChannelId = mattermostStore.getState()?.entities?.channels?.currentChannelId;
+            
+            const channelChangeUnsubscribe = mattermostStore.subscribe(() => {
+                const state = mattermostStore.getState();
+                const currentChannelId = state?.entities?.channels?.currentChannelId;
+                
+                if (currentChannelId && currentChannelId !== lastChannelId) {
+                    console.log('🔄 [ReadReceiptPlugin] Channel change detected:', {
+                        from: lastChannelId,
+                        to: currentChannelId,
+                        timestamp: new Date().toISOString()
+                    });
+                    
+                    lastChannelId = currentChannelId;
+                    
+                    // Reload plugin data for the new channel
+                    setTimeout(async () => {
+                        try {
+                            console.log('📥 [ReadReceiptPlugin] Reloading data for channel:', currentChannelId);
+                            await Promise.all([
+                                loadInitialReceipts(currentChannelId, pluginGlobalStoreInstance.dispatch, false),
+                                loadChannelReads(currentChannelId, false)
+                            ]);
+                            console.log('✅ [ReadReceiptPlugin] Channel data reloaded successfully');
+                        } catch (error) {
+                            console.error('❌ [ReadReceiptPlugin] Failed to reload channel data:', error);
+                        }
+                    }, 200); // Small delay to ensure DOM is ready
+                }
+            });
+            
+            // Store unsubscribe function for cleanup
+            (window as any).__readReceiptsChannelUnsubscribe = channelChangeUnsubscribe;
+
             console.log('✅ [ReadReceiptPlugin] Initialization complete');
         } catch (error) {
             console.error('❌ [ReadReceiptPlugin] Critical initialization error:', error);
