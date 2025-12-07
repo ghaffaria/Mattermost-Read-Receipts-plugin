@@ -3,6 +3,7 @@
 import { Dispatch } from 'redux';
 import { updateReadReceipts, getUserDisplayName } from './store';
 import { setReaders, addReader } from './store/channelReaders';
+import { updateAndReinjectReceipt } from './plugin';
 
 // Add debug configuration to Window interface
 declare global {
@@ -36,10 +37,10 @@ interface MattermostPost {
 
 // Type guard to check if an object is a MattermostPost
 function isMattermostPost(obj: any): obj is MattermostPost {
-    return obj && 
-           typeof obj.id === 'string' && 
-           typeof obj.create_at === 'number' && 
-           typeof obj.channel_id === 'string';
+    return obj &&
+        typeof obj.id === 'string' &&
+        typeof obj.create_at === 'number' &&
+        typeof obj.channel_id === 'string';
 }
 
 // Handle WebSocket events from Mattermost's native WebSocket system
@@ -80,6 +81,8 @@ export function handleWebSocketEvent(dispatch: Dispatch) {
                     userId: ReaderIDs.join(','), // Use all reader IDs from the event
                     isDM: true
                 }));
+                // Also trigger DOM re-injection for real-time updates
+                updateAndReinjectReceipt(ChannelID, MessageID, ReaderIDs);
             } else {
                 // For regular channels, also use ReaderIDs for consistency
                 debug.log('Channel', 'Processing channel read receipt via WebSocket', { MessageID, ReaderIDs, ChannelID });
@@ -89,15 +92,17 @@ export function handleWebSocketEvent(dispatch: Dispatch) {
                     userId: ReaderIDs.join(','), // Use all reader IDs from the event
                     isDM: false
                 }));
+                // Also trigger DOM re-injection for real-time updates
+                updateAndReinjectReceipt(ChannelID, MessageID, ReaderIDs);
             }
         }
-        
+
         if (eventType === CHANNEL_READERS_EVENT) {
             const { ChannelID, LastPostID, UserIDs } = data;
             if (ChannelID && LastPostID && Array.isArray(UserIDs)) {
                 const store = (window as any).store;
                 const channel = store?.getState()?.entities?.channels?.channels?.[ChannelID];
-                
+
                 dispatch(addReader({
                     channelId: ChannelID,
                     postId: LastPostID,

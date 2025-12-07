@@ -44,3 +44,6 @@ step-by-step-dm-test.js
 simple-dm-test.js
 *.py
 *.js
+/old-plan/*
+/plan/*
+/log-test/*

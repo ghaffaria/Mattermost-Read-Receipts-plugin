@@ -1,240 +1,121 @@
 // webapp/components/PostReceipt.tsx
-import React, { FC, ReactElement, useRef, useEffect } from 'react';
-import { useSelector, useStore } from 'react-redux';
+import React, { FC, ReactElement, useEffect, useState } from 'react';
+import { useSelector } from 'react-redux';
 import VisibilityTracker from './VisibilityTracker';
 import { Post } from '../types/mattermost-webapp';
 import { RootState } from '../store/types';
 import { selectReaders } from '../store/channelReaders';
-import { loadInitialReceipts } from '../store';
-import { reinitializeReadReceipts } from '../plugin';
-import styles from './PostReceipt.module.css';
 
 interface PostReceiptProps {
     post: Post;
 }
 
-const PostReceipt: FC<PostReceiptProps> = ({ post }): ReactElement | null => {
-    const contextStore = useStore(); // uses the Provider injected by RootObserver
-    const prevReadersRef = useRef<string[]>([]);
-    const reinitAttemptedRef = useRef<boolean>(false);
-    const reinitTimeoutRef = useRef<number | null>(null);
-
-    console.log('🔎 [PostReceipt] Component rendering:', {
-        postId: post?.id,
-        isTargetPost: post?.id === 'fpb56zb5ptdemeywszqqo5tywa',
-        storeAvailable: !!contextStore
-    });
-
+// Get user display name from Mattermost store
+const getUserDisplayName = (userId: string): string => {
     try {
-        // Early returns for invalid posts
-        if (!post?.id || !post?.user_id || !post?.channel_id) {
-            console.warn('⚠️ [PostReceipt] Invalid post:', {
-                id: post?.id,
-                userId: post?.user_id,
-                channelId: post?.channel_id
-            });
-            return null;
+        const mmStore = (window as any).store;
+        const user = mmStore?.getState()?.entities?.users?.profiles?.[userId];
+        if (user) {
+            return user.nickname ||
+                `${user.first_name || ''} ${user.last_name || ''}`.trim() ||
+                user.username ||
+                `User ${userId.substring(0, 8)}`;
         }
+    } catch {
+        // Ignore errors
+    }
+    return `User ${userId.substring(0, 8)}`;
+};
 
-        const messageId = post.id;
-        const readerIds = useSelector((state: RootState) => {
-            const readers = selectReaders(state, post.channel_id, messageId);
-            
-            return readers;
-        });
+const PostReceipt: FC<PostReceiptProps> = ({ post }): ReactElement | null => {
+    // Local state to trigger re-renders
+    const [renderCount, setRenderCount] = useState(0);
 
-        // Track reader changes
-        useEffect(() => {
-            if (messageId === 'fpb56zb5ptdemeywszqqo5tywa') {
-                const addedReaders = readerIds.filter(id => !prevReadersRef.current.includes(id));
-                const removedReaders = prevReadersRef.current.filter(id => !readerIds.includes(id));
-                console.log('📱 [PostReceipt] Target post readers changed:', {
-                    postId: messageId,
-                    currentReaders: readerIds,
-                    previousReaders: prevReadersRef.current,
-                    addedReaders,
-                    removedReaders,
-                    timestamp: new Date().toISOString()
-                });
-                prevReadersRef.current = readerIds;
-            }
-        }, [readerIds, messageId]);
-
-        // Get current user ID with improved logging
-        const currentUserId = document.cookie.match(/MMUSERID=([^;]+)/)?.[1] || 
-                             window.localStorage.getItem('MMUSERID') || '';
-        // Check if this is the user's own message
-        const isOwnMessage = post.user_id === currentUserId;
-
-        console.log('👤 [PostReceipt] User context:', {
-            postId: messageId,
-            isTargetPost: messageId === 'fpb56zb5ptdemeywszqqo5tywa',
-            currentUserId,
-            postAuthorId: post.user_id,
-            isOwnMessage
-        });
-
-        // Track if state has loaded
-        const [hasLoadedState, setHasLoadedState] = React.useState(false);
-        React.useEffect(() => {
-            setHasLoadedState(true);
-            if (messageId === 'fpb56zb5ptdemeywszqqo5tywa') {
-                console.log('🔄 [PostReceipt] Target post state loaded:', {
-                    messageId,
-                    readerCount: readerIds.length,
-                    readers: readerIds,
-                    isOwnMessage,
-                    currentUserId
-                });
-            }
-        }, [readerIds, messageId, isOwnMessage, currentUserId]);
-
-        // If the state hasn't loaded yet, show skeleton
-        if (!hasLoadedState) {
-            console.log('⌛ [PostReceipt] State loading:', {
-                postId: messageId,
-                isTargetPost: messageId === 'fpb56zb5ptdemeywszqqo5tywa'
-            });
-            return (<span style={{opacity:0.25, marginLeft:4}}>✓✓</span>);
-        }
-
-        // If there are no readers, don't render the receipt (but still render VisibilityTracker if not own message)
-        if (readerIds.length === 0) {
-            if (!isOwnMessage) {
-                console.log('👁️ [PostReceipt] No readers, showing tracker:', {
-                    postId: messageId,
-                    isTargetPost: messageId === 'fpb56zb5ptdemeywszqqo5tywa',
-                    authorId: post.user_id,
-                    channelId: post.channel_id
-                });
-                return (
-                    <VisibilityTracker 
-                        messageId={messageId} 
-                        postAuthorId={post.user_id}
-                        channelId={post.channel_id}
-                        key={`tracker-${messageId}`}
-                    />
-                );
-            }
-            return null;
-        }
-
-        // Early return if no user ID (not logged in)
-        if (!currentUserId) {
-            console.warn('⚠️ [PostReceipt] No current user ID found');
-            return null;
-        }
-
-        // Determine if the message has been seen by the current user
-        const seenBy = readerIds.includes(currentUserId);
-        
-        if (messageId === 'fpb56zb5ptdemeywszqqo5tywa') {
-            console.log('👀 [PostReceipt] Target post seen status:', {
-                seenBy,
-                currentUserId,
-                readerIds,
-                isOwnMessage
-            });
-        }
-
-        // Read receipts should ONLY be shown on the sender's own messages
-        // If this is not the user's own message, only render the VisibilityTracker (if not seen)
-        if (!isOwnMessage) {
-            if (!seenBy) {
-                console.log('👁️ [PostReceipt] Not own message, showing tracker:', {
-                    postId: messageId,
-                    isTargetPost: messageId === 'fpb56zb5ptdemeywszqqo5tywa'
-                });
-                return (
-                    <VisibilityTracker 
-                        messageId={messageId} 
-                        postAuthorId={post.user_id}
-                        channelId={post.channel_id}
-                        key={`tracker-${messageId}`}
-                    />
-                );
-            }
-            return null; // Don't show read receipts for received messages
-        }
-
-        // From here on, we know it's the user's own message
-        // Filter out current user from display list (they shouldn't see themselves in "Seen by")
-        const seenByOthers = readerIds.filter(id => id !== currentUserId);
-
-        // Get display names for readers using Mattermost's user profiles
-        const seenByOthersDisplay = seenByOthers.map(userId => {
-            try {
-                const mattermostStore = (window as any).store;
-                if (mattermostStore) {
-                    const user = mattermostStore.getState()?.entities?.users?.profiles?.[userId];
-                    if (user) {
-                        const displayName = user.nickname || 
-                                       `${user.first_name || ''} ${user.last_name || ''}`.trim() || 
-                                       user.username ||
-                                       `User ${userId.substring(0, 8)}`;
-                        if (messageId === 'fpb56zb5ptdemeywszqqo5tywa') {
-                            console.log('👤 [PostReceipt] Target post reader profile:', {
-                                userId,
-                                displayName,
-                                hasNickname: !!user.nickname,
-                                hasName: !!(user.first_name || user.last_name),
-                                hasUsername: !!user.username
-                            });
-                        }
-                        return displayName;
-                    }
-                }
-                console.warn('⚠️ [PostReceipt] User profile not found:', userId);
-                return `User ${userId.substring(0, 8)}`;
-            } catch (error) {
-                console.error('❌ [PostReceipt] Error getting display name:', {
-                    userId,
-                    error: error instanceof Error ? error.message : String(error)
-                });
-                return `User ${userId.substring(0, 8)}`;
-            }
-        }).filter(name => name);
-
-        // Return the receipt UI
-        return (
-            <div 
-                className="post-receipt-container" 
-                data-post-id={messageId}
-                data-component="post-receipt"
-                data-is-own-message={isOwnMessage}
-                data-author-id={post.user_id}
-            >
-                {seenByOthers.length > 0 && (
-                    <div 
-                        className="post-receipt" 
-                        style={{ 
-                            fontSize: '11px', 
-                            color: 'rgba(63, 67, 80, 0.72)',
-                            padding: '4px 0',
-                            marginTop: '2px',
-                            display: 'inline-flex',
-                            alignItems: 'center'
-                        }}
-                        data-seen-by={seenByOthers.join(',')}
-                    >
-                        <span className="read-receipt-text">
-                            Seen by {seenByOthersDisplay.join(', ')}
-                        </span>
-                    </div>
-                )}
-            </div>
-        );
-    } catch (error) {
-        console.error('❌ [PostReceipt] Error in component:', {
-            error: error instanceof Error ? error.message : String(error),
-            post: {
-                id: post?.id,
-                userId: post?.user_id,
-                channelId: post?.channel_id
-            }
-        });
+    // Early returns for invalid posts
+    if (!post?.id || !post?.user_id || !post?.channel_id) {
         return null;
     }
+
+    const messageId = post.id;
+    const channelId = post.channel_id;
+
+    // Get readers from Redux
+    const readerIds = useSelector((state: RootState) =>
+        selectReaders(state, channelId, messageId)
+    );
+
+    // Get current user ID
+    const currentUserId = document.cookie.match(/MMUSERID=([^;]+)/)?.[1] ||
+        window.localStorage.getItem('MMUSERID') || '';
+
+    // Is this my own message?
+    const isOwnMessage = post.user_id === currentUserId;
+
+    // Force re-render periodically after channel data loads
+    // This is a workaround for React not detecting Redux changes on channel switch
+    useEffect(() => {
+        // Set up a timer to force re-renders for a short period after mount
+        let count = 0;
+        const maxRerenders = 5;
+        const interval = setInterval(() => {
+            count++;
+            if (count <= maxRerenders) {
+                setRenderCount(c => c + 1);
+            } else {
+                clearInterval(interval);
+            }
+        }, 300);
+
+        return () => clearInterval(interval);
+    }, [channelId]); // Re-run when channel changes
+
+    // For messages by others, show VisibilityTracker if not seen
+    if (!isOwnMessage) {
+        const seenByMe = readerIds.includes(currentUserId);
+        if (!seenByMe) {
+            return (
+                <VisibilityTracker
+                    messageId={messageId}
+                    postAuthorId={post.user_id}
+                    channelId={channelId}
+                />
+            );
+        }
+        return null;
+    }
+
+    // For own messages, show "Seen by" if others have read it
+    const seenByOthers = readerIds.filter(id => id !== currentUserId);
+
+    if (seenByOthers.length === 0) {
+        return null;
+    }
+
+    // Get display names
+    const displayNames = seenByOthers.map(getUserDisplayName);
+
+    return (
+        <div
+            className="post-receipt-container"
+            data-post-id={messageId}
+        >
+            <div
+                className="post-receipt"
+                style={{
+                    fontSize: '11px',
+                    color: 'rgba(63, 67, 80, 0.72)',
+                    padding: '4px 0',
+                    marginTop: '2px',
+                    display: 'inline-flex',
+                    alignItems: 'center'
+                }}
+            >
+                <span className="read-receipt-text">
+                    Seen by {displayNames.join(', ')}
+                </span>
+            </div>
+        </div>
+    );
 };
 
 export default PostReceipt;
