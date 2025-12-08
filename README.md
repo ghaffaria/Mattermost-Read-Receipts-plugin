@@ -82,34 +82,56 @@ make dev                    # Build and deploy to running instance
 
 ## 🔌 Architecture
 
-```
-┌─────────────────────────────────────────────────────────────┐
-│                        Frontend                             │
-│  ┌──────────────┐  ┌──────────────┐  ┌──────────────────┐  │
-│  │PluginEntry   │→ │PostReceipt   │→ │VisibilityTracker │  │
-│  └──────────────┘  └──────────────┘  └──────────────────┘  │
-│         ↓                  ↓                   ↓            │
-│  ┌──────────────────────────────────────────────────────┐  │
-│  │              Redux Store + WebSocket                  │  │
-│  └──────────────────────────────────────────────────────┘  │
-└─────────────────────────────────────────────────────────────┘
-                              ↕ WebSocket
-┌─────────────────────────────────────────────────────────────┐
-│                        Backend                              │
-│  ┌──────────────┐  ┌──────────────┐  ┌──────────────────┐  │
-│  │  API Layer   │→ │   Plugin     │→ │   Database       │  │
-│  └──────────────┘  └──────────────┘  └──────────────────┘  │
-└─────────────────────────────────────────────────────────────┘
+### Component Overview
+
+```mermaid
+graph TB
+    subgraph Frontend
+        RP[ReadReceiptPlugin]
+        RRO[ReadReceiptRootObserver]
+        PR[PostReceipt Component]
+        VT[VisibilityTracker]
+        RS[Redux Store]
+    end
+    
+    subgraph Backend
+        API[API Endpoints]
+        WS[WebSocket Server]
+        DB[(Database)]
+    end
+    
+    RP -->|Initializes| RS
+    RP -->|Registers| RRO
+    RP -->|Registers| PR
+    RRO -->|Tracks| VT
+    VT -->|Reports Visibility| PR
+    PR -->|Updates| RS
+    RS -->|WebSocket Events| WS
+    WS -->|Real-time Updates| RS
+    PR -->|Read Status| API
+    API -->|Store/Retrieve| DB
 ```
 
 ### Message Read Flow
 
-1. User views a message in viewport
-2. VisibilityTracker waits for visibility threshold (2 seconds default)
-3. Read receipt is sent to server via REST API
-4. Server stores receipt and broadcasts WebSocket event
-5. All channel participants receive real-time update
-6. "Seen by..." indicator appears for message author
+```mermaid
+sequenceDiagram
+    participant U as User
+    participant VT as VisibilityTracker
+    participant C as Client Store
+    participant WS as WebSocket
+    participant S as Server
+    participant DB as Database
+    
+    U->>VT: Views message
+    VT->>VT: Wait 2000ms
+    VT->>C: Mark as read
+    C->>WS: Send read event
+    WS->>S: Forward event
+    S->>DB: Store receipt
+    S->>WS: Broadcast to channel
+    WS->>C: Update UI
+```
 
 ---
 
