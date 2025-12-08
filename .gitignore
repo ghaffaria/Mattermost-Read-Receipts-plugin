@@ -22,9 +22,6 @@ webapp/node_modules
 
 
 
-mattermost/*
-/dist/*
-/server/dist/*
 
 *.txt
 *.sh
