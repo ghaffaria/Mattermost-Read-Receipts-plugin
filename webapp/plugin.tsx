@@ -53,8 +53,34 @@ let injectionPending = false;
 
 // Exported function for WebSocket handler to call when new read receipts arrive
 export const updateAndReinjectReceipt = (channelId: string, postId: string, readerIds: string[]) => {
-    // Only update if this is the current channel
-    if (channelId !== currentChannelId) return;
+    // Get the actual current channel from Mattermost store (most reliable source)
+    const mmStore = (window as any).store;
+    const actualCurrentChannel = mmStore?.getState()?.entities?.channels?.currentChannelId;
+
+    console.log('[WebSocket Reinject] Received:', {
+        channelId: channelId.slice(0, 8),
+        postId: postId.slice(0, 8),
+        readerIds,
+        storedCurrentChannel: currentChannelId?.slice(0, 8),
+        actualCurrentChannel: actualCurrentChannel?.slice(0, 8)
+    });
+
+    // If currentChannelId wasn't set (e.g., no channel switch happened), update it
+    if (!currentChannelId && actualCurrentChannel) {
+        currentChannelId = actualCurrentChannel;
+        console.log('[WebSocket Reinject] Updated currentChannelId from MM store');
+    }
+
+    // Only update if this is the current channel (check both stored and actual)
+    if (channelId !== currentChannelId && channelId !== actualCurrentChannel) {
+        console.log('[WebSocket Reinject] Skipping - not current channel');
+        return;
+    }
+
+    // Ensure currentChannelId is set for future use
+    if (currentChannelId !== channelId) {
+        currentChannelId = channelId;
+    }
 
     // Update the payload
     if (!currentChannelPayload[postId]) {
@@ -68,6 +94,8 @@ export const updateAndReinjectReceipt = (channelId: string, postId: string, read
         }
     }
 
+    console.log('[WebSocket Reinject] Will inject. Payload posts:', Object.keys(currentChannelPayload).length);
+
     // Trigger re-injection after a short delay
     setTimeout(() => {
         if (Object.keys(currentChannelPayload).length > 0 && currentChannelId) {
@@ -75,6 +103,7 @@ export const updateAndReinjectReceipt = (channelId: string, postId: string, read
         }
     }, 100);
 };
+
 
 // Debounced re-injection for scroll events
 const debouncedReinject = (() => {
@@ -199,6 +228,114 @@ const setupScrollListener = () => {
     }, 500);
 };
 
+// Track which posts we've already sent read receipts for (to avoid duplicates)
+const sentReadReceipts = new Set<string>();
+
+// DOM-based visibility tracking for posts by others
+// This replaces the React-based VisibilityTracker when React components don't render
+const setupVisibilityTracking = (channelId: string, payload: { [postId: string]: string[] }) => {
+    const currentUserId = document.cookie.match(/MMUSERID=([^;]+)/)?.[1] ||
+        window.localStorage.getItem('MMUSERID') || '';
+
+    if (!currentUserId) return;
+
+    const mmStore = (window as any).store;
+
+    // Find visible posts by others that haven't been marked as read
+    const checkAndSendReadReceipts = () => {
+        const postElements = document.querySelectorAll('.post, [id^="post_"]');
+
+        postElements.forEach((postElement) => {
+            const elementId = postElement.getAttribute('id');
+            let postId = '';
+
+            if (elementId?.startsWith('post_')) {
+                postId = elementId.replace('post_', '');
+            }
+
+            if (!postId) return;
+
+            // Skip if already sent
+            if (sentReadReceipts.has(postId)) return;
+
+            // Get post from Mattermost store
+            const post = mmStore?.getState()?.entities?.posts?.posts?.[postId];
+            if (!post || post.channel_id !== channelId) return;
+
+            // Only track messages by others
+            if (post.user_id === currentUserId) return;
+
+            // Check if already read (in payload)
+            const readers = payload[postId] || [];
+            if (readers.includes(currentUserId)) return;
+
+            // Check if element is visible in viewport
+            const rect = postElement.getBoundingClientRect();
+            const isVisible = (
+                rect.top >= 0 &&
+                rect.bottom <= window.innerHeight &&
+                rect.width > 0 &&
+                rect.height > 0
+            );
+
+            if (!isVisible) return;
+
+            // Mark as sent to prevent duplicates
+            sentReadReceipts.add(postId);
+
+            // Send read receipt
+            console.log('[VisibilityTracking] Sending read receipt for:', postId.slice(0, 8));
+
+            const csrfToken = document.cookie.match(/MMCSRF=([^;]+)/)?.[1] || '';
+
+            fetch('/plugins/mattermost-readreceipts/api/v1/read', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-Token': csrfToken,
+                    'Mattermost-User-Id': currentUserId
+                },
+                credentials: 'same-origin',
+                body: JSON.stringify({
+                    message_id: postId,
+                    channel_id: channelId,
+                    timestamp: Date.now()
+                }),
+            }).then(response => {
+                if (response.ok) {
+                    console.log('[VisibilityTracking] Read receipt sent successfully for:', postId.slice(0, 8));
+                }
+            }).catch(error => {
+                console.error('[VisibilityTracking] Failed to send read receipt:', error);
+                // Remove from sent so it can be retried
+                sentReadReceipts.delete(postId);
+            });
+        });
+    };
+
+    // Check immediately
+    setTimeout(checkAndSendReadReceipts, 500);
+
+    // Also check on scroll (debounced)
+    let scrollTimeout: number | null = null;
+    const handleScroll = () => {
+        if (scrollTimeout) clearTimeout(scrollTimeout);
+        scrollTimeout = window.setTimeout(checkAndSendReadReceipts, 300);
+    };
+
+    document.addEventListener('scroll', handleScroll, { passive: true, capture: true });
+
+    // Check periodically for the first 5 seconds
+    let checkCount = 0;
+    const checkInterval = setInterval(() => {
+        checkCount++;
+        if (checkCount > 10) {
+            clearInterval(checkInterval);
+            return;
+        }
+        checkAndSendReadReceipts();
+    }, 500);
+};
 
 // WORKAROUND: Directly inject receipt elements into DOM
 // This bypasses React's rendering issues on channel switch
@@ -478,6 +615,8 @@ export default class ReadReceiptPlugin {
                             });
                             if (payload && typeof payload === 'object' && Object.keys(payload).length > 0) {
                                 injectReceiptsIntoDOM(payload, currentChannelId);
+                                // Also set up visibility tracking for messages by others
+                                setupVisibilityTracking(currentChannelId, payload);
                             }
                         } catch (error) {
                             console.error('[ReadReceiptPlugin] Failed to reload:', error);
