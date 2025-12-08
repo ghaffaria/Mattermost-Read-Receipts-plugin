@@ -82,9 +82,12 @@ export const updateAndReinjectReceipt = (channelId: string, postId: string, read
         currentChannelId = channelId;
     }
 
-    // Update the payload
+    // Update the payload - clone arrays to avoid mutating frozen Redux state
     if (!currentChannelPayload[postId]) {
         currentChannelPayload[postId] = [];
+    } else if (Object.isFrozen(currentChannelPayload[postId])) {
+        // Clone the frozen array
+        currentChannelPayload[postId] = [...currentChannelPayload[postId]];
     }
 
     // Add new readers (avoiding duplicates)
