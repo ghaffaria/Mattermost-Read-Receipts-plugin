@@ -21,7 +21,8 @@ func NewPostgresStore(db *sql.DB) *PostgresStore {
 }
 
 func (s *PostgresStore) Initialize() error {
-	query := `
+	// Create table if not exists
+	createQuery := `
 	CREATE TABLE IF NOT EXISTS read_events (
 		message_id TEXT NOT NULL,
 		user_id TEXT NOT NULL,
@@ -29,11 +30,34 @@ func (s *PostgresStore) Initialize() error {
 		channel_id TEXT,
 		PRIMARY KEY (message_id, user_id)
 	);
+	`
+	if _, err := s.db.Exec(createQuery); err != nil {
+		return err
+	}
+
+	// Migration: Add channel_id column if it doesn't exist (for upgrades from old versions)
+	alterQuery := `
+	DO $$
+	BEGIN
+		IF NOT EXISTS (
+			SELECT 1 FROM information_schema.columns 
+			WHERE table_name='read_events' AND column_name='channel_id'
+		) THEN
+			ALTER TABLE read_events ADD COLUMN channel_id TEXT;
+		END IF;
+	END $$;
+	`
+	if _, err := s.db.Exec(alterQuery); err != nil {
+		return err
+	}
+
+	// Create indexes
+	indexQuery := `
 	CREATE INDEX IF NOT EXISTS idx_read_events_message_id ON read_events(message_id);
 	CREATE INDEX IF NOT EXISTS idx_read_events_user_id ON read_events(user_id);
 	CREATE INDEX IF NOT EXISTS idx_read_events_channel_id ON read_events(channel_id);
 	`
-	_, err := s.db.Exec(query)
+	_, err := s.db.Exec(indexQuery)
 	return err
 }
 

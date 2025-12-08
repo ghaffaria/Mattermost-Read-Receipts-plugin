@@ -147,6 +147,20 @@ func (p *Plugin) OnActivate() error {
 		return errors.Errorf("unsupported database driver: %s", driverName)
 	}
 
+	// Initialize database tables (create if not exists)
+	if err := p.store.Initialize(); err != nil {
+		p.logError("[Plugin] Failed to initialize read_events table:", "error", err.Error())
+		return errors.Wrap(err, "failed to initialize read_events table")
+	}
+	p.logInfo("[Plugin] Database table 'read_events' initialized successfully")
+
+	// Initialize channel_reads table
+	if err := p.store.InitializeChannelReads(); err != nil {
+		p.logError("[Plugin] Failed to initialize channel_reads table:", "error", err.Error())
+		return errors.Wrap(err, "failed to initialize channel_reads table")
+	}
+	p.logInfo("[Plugin] Database table 'channel_reads' initialized successfully")
+
 	p.readReceiptStore = &ReadReceiptStore{Store: p.store}
 	p.isConnected = true
 
