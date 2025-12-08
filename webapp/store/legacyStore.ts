@@ -68,7 +68,7 @@ interface Receipt {
 }
 
 export const loadInitialReceipts = async (channelId: string): Promise<void> => {
-    // console.log('🔄 [Store] Loading receipts for channel:', channelId);
+    if (window.__DEBUG_RR__?.verbose) console.log('🔄 [Store] Loading receipts for channel:', channelId);
     
     try {
         const response = await fetch(`/plugins/mattermost-readreceipts/api/v1/receipts?channel_id=${encodeURIComponent(channelId)}`, {
@@ -134,7 +134,7 @@ export interface PluginConfig {
 }
 
 export const fetchPluginConfig = async (): Promise<PluginConfig> => {
-    // console.log('⚙️ [Store] Fetching plugin config...');
+    if (window.__DEBUG_RR__?.verbose) console.log('⚙️ [Store] Fetching plugin config...');
     
     try {
         const response = await fetch('/plugins/mattermost-readreceipts/api/v1/config', {
@@ -151,7 +151,7 @@ export const fetchPluginConfig = async (): Promise<PluginConfig> => {
         }
 
         const config = await response.json();
-        // console.log('✅ [Store] Plugin config loaded:', config);
+        if (window.__DEBUG_RR__?.verbose) console.log('✅ [Store] Plugin config loaded:', config);
         return config;
     } catch (error) {
         console.error('❌ [Store] Failed to fetch plugin config:', error);

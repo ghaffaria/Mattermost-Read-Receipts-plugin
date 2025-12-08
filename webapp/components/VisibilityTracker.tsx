@@ -38,20 +38,20 @@ const VisibilityTracker: FC<VisibilityTrackerProps> = ({
         if (!userId) {
             console.error('❌ [VisibilityTracker] Missing MMUSERID');
         }
-        // console.log('DEBUG: [VisibilityTracker] getUserId result:', userId);
+        if (window.__DEBUG_RR__?.verbose) console.log('DEBUG: [VisibilityTracker] getUserId result:', userId);
         return userId || '';
     };
 
     const shouldTrackVisibility = (): boolean => {
         const currentUserId = getUserId();
         const track = currentUserId !== postAuthorId;
-        // console.log(`DEBUG: [VisibilityTracker] shouldTrackVisibility for ${messageId}: currentUserId=${currentUserId}, postAuthorId=${postAuthorId}, shouldTrack=${track}`);
+        if (window.__DEBUG_RR__?.verbose) console.log(`DEBUG: [VisibilityTracker] shouldTrackVisibility for ${messageId}: currentUserId=${currentUserId}, postAuthorId=${postAuthorId}, shouldTrack=${track}`);
         return track;
     };
 
     const sendReadReceipt = async () => {
         // Log before fetch call, show hasSent and shouldTrackVisibility
-        // console.log(`INFO: [VisibilityTracker] Attempting to send read receipt for ${messageId}. Conditions: hasSent=${hasSent}, shouldTrack=${shouldTrackVisibility()}`);
+        if (window.__DEBUG_RR__?.verbose) console.log(`INFO: [VisibilityTracker] Attempting to send read receipt for ${messageId}. Conditions: hasSent=${hasSent}, shouldTrack=${shouldTrackVisibility()}`);
         if (hasSent || !shouldTrackVisibility()) {
             if (timerRef.current) {
                 clearInterval(timerRef.current);
@@ -101,7 +101,7 @@ const VisibilityTracker: FC<VisibilityTrackerProps> = ({
             });
 
             if (response.ok) {
-                // console.log(`✅ [VisibilityTracker] Read receipt sent successfully for ${messageId}`);
+                if (window.__DEBUG_RR__?.verbose) console.log(`✅ [VisibilityTracker] Read receipt sent successfully for ${messageId}`);
                 setHasSent(true);
                 if (timerRef.current) {
                     clearInterval(timerRef.current);
@@ -123,14 +123,14 @@ const VisibilityTracker: FC<VisibilityTrackerProps> = ({
 
     const resetVisibilityTimer = debounce(() => {
         if (!isTabVisible.current) {
-            // console.log(`⏱️ [VisibilityTracker] Reset visibility timer for ${messageId} (tab hidden)`);
+            if (window.__DEBUG_RR__?.verbose) console.log(`⏱️ [VisibilityTracker] Reset visibility timer for ${messageId} (tab hidden)`);
             if (timerRef.current) {
                 clearInterval(timerRef.current);
                 timerRef.current = null;
             }
             visibilityStartTime.current = null;
         } else {
-            // console.log(`⏱️ [VisibilityTracker] Keeping timer for ${messageId} (tab visible)`);
+            if (window.__DEBUG_RR__?.verbose) console.log(`⏱️ [VisibilityTracker] Keeping timer for ${messageId} (tab visible)`);
         }
     }, 500);
 
@@ -138,10 +138,10 @@ const VisibilityTracker: FC<VisibilityTrackerProps> = ({
         isTabVisible.current = document.visibilityState === 'visible';
         
         if (!isTabVisible.current) {
-            // console.log(`👁️ [VisibilityTracker] Tab hidden, pausing timer for ${messageId}`);
+            if (window.__DEBUG_RR__?.verbose) console.log(`👁️ [VisibilityTracker] Tab hidden, pausing timer for ${messageId}`);
             resetVisibilityTimer();
         } else if (isElementVisible.current && !hasSent) {
-            // console.log(`👁️ [VisibilityTracker] Tab visible again, resuming timer for ${messageId}`);
+            if (window.__DEBUG_RR__?.verbose) console.log(`👁️ [VisibilityTracker] Tab visible again, resuming timer for ${messageId}`);
             visibilityStartTime.current = Date.now();
             timerRef.current = setInterval(checkVisibilityDuration, 1000);
         }
@@ -158,7 +158,7 @@ const VisibilityTracker: FC<VisibilityTrackerProps> = ({
 
         // Don't track if tab is not active
         if (document.visibilityState !== 'visible') {
-            // console.log(`👁️ [VisibilityTracker] Tab not active, resetting timer for ${messageId}`);
+            if (window.__DEBUG_RR__?.verbose) console.log(`👁️ [VisibilityTracker] Tab not active, resetting timer for ${messageId}`);
             resetVisibilityTimer();
             return;
         }
@@ -166,7 +166,7 @@ const VisibilityTracker: FC<VisibilityTrackerProps> = ({
         if (visibilityStartTime.current && !hasSent) {
             const visibilityDuration = Date.now() - visibilityStartTime.current;
             // Log the threshold value for debugging
-            // console.log(`DEBUG: [VisibilityTracker] Using visibilityThresholdMs: ${visibilityThresholdMs} for message ${messageId}`);
+            if (window.__DEBUG_RR__?.verbose) console.log(`DEBUG: [VisibilityTracker] Using visibilityThresholdMs: ${visibilityThresholdMs} for message ${messageId}`);
             if (visibilityDuration >= visibilityThresholdMs) {
                 // console.log(`⌛ [VisibilityTracker] Visibility threshold reached for ${messageId}:`, {
                 // duration: visibilityDuration,
@@ -192,7 +192,7 @@ const VisibilityTracker: FC<VisibilityTrackerProps> = ({
         // Start tracking time when message becomes visible and tab is active
         if (isElementVisible.current && isTabVisible.current && !hasSent) {
             if (!visibilityStartTime.current) {
-                // console.log(`⏱️ [VisibilityTracker] Starting visibility timer for ${messageId}`);
+                if (window.__DEBUG_RR__?.verbose) console.log(`⏱️ [VisibilityTracker] Starting visibility timer for ${messageId}`);
                 visibilityStartTime.current = Date.now();
                 timerRef.current = setInterval(checkVisibilityDuration, 1000);
             }
@@ -226,7 +226,7 @@ const VisibilityTracker: FC<VisibilityTrackerProps> = ({
                 rootMargin: '0px'
             });
             observerRef.current.observe(elementRef.current);
-            // console.log(`👀 [VisibilityTracker] Observer attached to element for ${messageId}`);
+            if (window.__DEBUG_RR__?.verbose) console.log(`👀 [VisibilityTracker] Observer attached to element for ${messageId}`);
             
             // IMPORTANT: Check if element is immediately visible after navigation
             // This handles the case where Admin returns to DM and messages are already in view
@@ -241,7 +241,7 @@ const VisibilityTracker: FC<VisibilityTrackerProps> = ({
             );
             
             if (isImmediatelyVisible && isTabVisible.current && !hasSent) {
-                // console.log(`⚡ [VisibilityTracker] Message ${messageId} is immediately visible after setup, starting timer`);
+                if (window.__DEBUG_RR__?.verbose) console.log(`⚡ [VisibilityTracker] Message ${messageId} is immediately visible after setup, starting timer`);
                 isElementVisible.current = true;
                 if (!visibilityStartTime.current) {
                     visibilityStartTime.current = Date.now();
@@ -252,7 +252,7 @@ const VisibilityTracker: FC<VisibilityTrackerProps> = ({
         // Set up tab visibility listener
         document.addEventListener('visibilitychange', handleTabVisibilityChange);
         return () => {
-            // console.log(`🧹 [VisibilityTracker] Cleaning up observers for ${messageId}`);
+            if (window.__DEBUG_RR__?.verbose) console.log(`🧹 [VisibilityTracker] Cleaning up observers for ${messageId}`);
             resetVisibilityTimer();
             if (observerRef.current) {
                 observerRef.current.disconnect();

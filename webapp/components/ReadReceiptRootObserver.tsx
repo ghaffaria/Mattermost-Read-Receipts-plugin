@@ -23,7 +23,7 @@ interface MattermostState {
 
 const getAuthorId = (postId: string): string => {
     const mmGlobalStore = (window as any).store;
-    // console.log('DEBUG: [RootObserver] window.store for postId', postId, 'is', mmGlobalStore ? 'available' : 'NOT AVAILABLE');
+    if (window.__DEBUG_RR__?.verbose) console.log('DEBUG: [RootObserver] window.store for postId', postId, 'is', mmGlobalStore ? 'available' : 'NOT AVAILABLE');
     if (!mmGlobalStore) {
         return '';
     }
@@ -65,14 +65,14 @@ const ReadReceiptRootObserver: React.FC = () => {
 
             // Check if we already attached a receipt
             if (node.querySelector('.post-receipt-container')) {
-                // console.log('ℹ️ [RootObserver] Receipt already attached:', postId);
+                if (window.__DEBUG_RR__?.verbose) console.log('ℹ️ [RootObserver] Receipt already attached:', postId);
                 return;
             }
 
             // Find or create the container for our receipt component
             let receiptContainer = node.querySelector('.post-receipt-mount-point');
             if (!receiptContainer) {
-                // console.log('🏗️ [RootObserver] Creating receipt container for:', postId);
+                if (window.__DEBUG_RR__?.verbose) console.log('🏗️ [RootObserver] Creating receipt container for:', postId);
                 receiptContainer = document.createElement('div');
                 receiptContainer.className = 'post-receipt-mount-point';
                 
@@ -94,7 +94,7 @@ const ReadReceiptRootObserver: React.FC = () => {
             const post = state?.entities?.posts?.posts?.[postId];
             const channelId = post?.channel_id;
 
-            // console.log('🎨 [RootObserver] Rendering PostReceipt for:', { postId, authorId, channelId });
+            if (window.__DEBUG_RR__?.verbose) console.log('🎨 [RootObserver] Rendering PostReceipt for:', { postId, authorId, channelId });
             if (!pluginStore) {
                 console.error('CRITICAL DEBUG: [RootObserver] pluginStore is null/undefined before ReactDOM.render!');
                 return;
@@ -142,7 +142,7 @@ const ReadReceiptRootObserver: React.FC = () => {
                 });
                 
                 observer.observe(target, { childList: true, subtree: true });
-                // console.log('👀 [RootObserver] Attached to:', target);
+                if (window.__DEBUG_RR__?.verbose) console.log('👀 [RootObserver] Attached to:', target);
 
                 // Also handle any existing posts
                 target.querySelectorAll('[data-testid="postView"]').forEach((node) => {

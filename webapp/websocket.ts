@@ -63,6 +63,7 @@ export function handleWebSocketEvent(dispatch: Dispatch) {
             const isActuallyDM = IsDM || channelInfo?.type === 'D';
 
             if (isActuallyDM) {
+                if (window.__DEBUG_RR__?.verbose) console.log('[RR DM] Processing DM read receipt via WebSocket', { MessageID, readerIds, ChannelID });
                 dispatch(addReader({
                     channelId: ChannelID,
                     postId: MessageID,
@@ -73,6 +74,7 @@ export function handleWebSocketEvent(dispatch: Dispatch) {
                 updateAndReinjectReceipt(ChannelID, MessageID, readerIds);
             } else {
                 // For regular/group channels
+                if (window.__DEBUG_RR__?.verbose) console.log('[RR Channel] Processing channel read receipt via WebSocket', { MessageID, readerIds, ChannelID });
                 dispatch(addReader({
                     channelId: ChannelID,
                     postId: MessageID,
@@ -97,6 +99,11 @@ export function handleWebSocketEvent(dispatch: Dispatch) {
                     userId: UserIDs.join(','),
                     isDM: channel?.type === 'D'
                 }));
+
+                if (window.__DEBUG_RR__?.verbose) console.log('[RR Channel] Updated channel readers', {
+                    channelId: ChannelID,
+                    readers: UserIDs
+                });
             } else {
                 console.error('[RR WebSocket] Invalid channel readers data:', data);
             }

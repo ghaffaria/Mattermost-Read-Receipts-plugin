@@ -57,13 +57,23 @@ export const updateAndReinjectReceipt = (channelId: string, postId: string, read
     const mmStore = (window as any).store;
     const actualCurrentChannel = mmStore?.getState()?.entities?.channels?.currentChannelId;
 
+    if (window.__DEBUG_RR__?.verbose) console.log('[WebSocket Reinject] Received:', {
+        channelId: channelId.slice(0, 8),
+        postId: postId.slice(0, 8),
+        readerIds,
+        storedCurrentChannel: currentChannelId?.slice(0, 8),
+        actualCurrentChannel: actualCurrentChannel?.slice(0, 8)
+    });
+
     // If currentChannelId wasn't set (e.g., no channel switch happened), update it
     if (!currentChannelId && actualCurrentChannel) {
         currentChannelId = actualCurrentChannel;
+        if (window.__DEBUG_RR__?.verbose) console.log('[WebSocket Reinject] Updated currentChannelId from MM store');
     }
 
     // Only update if this is the current channel (check both stored and actual)
     if (channelId !== currentChannelId && channelId !== actualCurrentChannel) {
+        if (window.__DEBUG_RR__?.verbose) console.log('[WebSocket Reinject] Skipping - not current channel');
         return;
     }
 
@@ -86,6 +96,8 @@ export const updateAndReinjectReceipt = (channelId: string, postId: string, read
             currentChannelPayload[postId].push(readerId);
         }
     }
+
+    if (window.__DEBUG_RR__?.verbose) console.log('[WebSocket Reinject] Will inject. Payload posts:', Object.keys(currentChannelPayload).length);
 
     // Trigger re-injection after a short delay
     setTimeout(() => {
@@ -274,6 +286,8 @@ const setupVisibilityTracking = (channelId: string, payload: { [postId: string]:
             // Mark as sent to prevent duplicates
             sentReadReceipts.add(postId);
 
+            if (window.__DEBUG_RR__?.verbose) console.log('[VisibilityTracking] Sending read receipt for:', postId.slice(0, 8));
+
             const csrfToken = document.cookie.match(/MMCSRF=([^;]+)/)?.[1] || '';
 
             fetch('/plugins/mattermost-readreceipts/api/v1/read', {
@@ -290,7 +304,9 @@ const setupVisibilityTracking = (channelId: string, payload: { [postId: string]:
                     timestamp: Date.now()
                 }),
             }).then(response => {
-                // Successfully sent
+                if (response.ok && window.__DEBUG_RR__?.verbose) {
+                    console.log('[VisibilityTracking] Read receipt sent successfully for:', postId.slice(0, 8));
+                }
             }).catch(error => {
                 console.error('[VisibilityTracking] Failed to send read receipt:', error);
                 // Remove from sent so it can be retried
@@ -333,7 +349,10 @@ const injectReceiptsIntoDOM = (payload: { [postId: string]: string[] }, channelI
     const currentUserId = document.cookie.match(/MMUSERID=([^;]+)/)?.[1] ||
         window.localStorage.getItem('MMUSERID') || '';
 
+    if (window.__DEBUG_RR__?.verbose) console.log('[DOM Injection] Starting:', { currentUserId: currentUserId.slice(0, 8), channelId: channelId.slice(0, 8) });
+
     if (!currentUserId) {
+        if (window.__DEBUG_RR__?.verbose) console.log('[DOM Injection] No currentUserId, aborting');
         return;
     }
 
@@ -353,6 +372,8 @@ const injectReceiptsIntoDOM = (payload: { [postId: string]: string[] }, channelI
         if (postElements.length === 0) {
             postElements = document.querySelectorAll('.a11y__section.post');
         }
+
+        if (window.__DEBUG_RR__?.verbose) console.log('[DOM Injection] Found ' + postElements.length + ' post elements');
 
         let injectedCount = 0;
         let skippedReasons: { [key: string]: number } = {};
@@ -413,11 +434,19 @@ const injectReceiptsIntoDOM = (payload: { [postId: string]: string[] }, channelI
             injectedCount++;
         });
 
+        if (window.__DEBUG_RR__?.verbose) console.log('[DOM Injection] Complete:', { injectedCount, skippedReasons });
     }, 200);
 };
 
 
 export const reinitializeReadReceipts = async (channelId?: string) => {
+    if (window.__DEBUG_RR__?.verbose) console.log('🔄 [ReadReceiptPlugin] Manual reinitialization requested:', {
+        hasRegistry: !!globalRegistry,
+        hasStore: !!globalMattermostStore,
+        channelId,
+        timestamp: new Date().toISOString()
+    });
+
     if (!globalRegistry || !globalMattermostStore || !isStoreInitialized()) {
         console.error('[ReadReceiptPlugin] Cannot reinitialize - missing required components');
         return;
@@ -436,6 +465,7 @@ export const reinitializeReadReceipts = async (channelId?: string) => {
         }
 
         if (channelId) {
+            if (window.__DEBUG_RR__?.verbose) console.log('🔄 [ReadReceiptPlugin] Reloading channel data:', channelId);
             await Promise.all([
                 loadInitialReceipts(channelId, pluginGlobalStoreInstance.dispatch, false).catch(err => {
                     console.error('❌ [ReadReceiptPlugin] Failed to reload receipts:', err);
@@ -445,6 +475,8 @@ export const reinitializeReadReceipts = async (channelId?: string) => {
                 })
             ]);
         }
+
+        if (window.__DEBUG_RR__?.verbose) console.log('✅ [ReadReceiptPlugin] Manual reinitialization complete');
 
     } catch (error) {
         console.error('[ReadReceiptPlugin] Reinitialization failed:', error);
@@ -580,6 +612,11 @@ export default class ReadReceiptPlugin {
 
                             // Inject receipts directly into DOM as workaround for React re-render issues
                             const payload = result?.payload;
+                            if (window.__DEBUG_RR__?.verbose) console.log('[DOM Injection] Result:', {
+                                hasPayload: !!payload,
+                                payloadType: typeof payload,
+                                postCount: payload ? Object.keys(payload).length : 0
+                            });
                             if (payload && typeof payload === 'object' && Object.keys(payload).length > 0) {
                                 injectReceiptsIntoDOM(payload, currentChannelId);
                                 // Also set up visibility tracking for messages by others
@@ -594,6 +631,8 @@ export default class ReadReceiptPlugin {
 
             // Store unsubscribe function for cleanup
             (window as any).__readReceiptsChannelUnsubscribe = channelChangeUnsubscribe;
+
+            if (window.__DEBUG_RR__?.verbose) console.log('✅ [ReadReceiptPlugin] Initialization complete');
         } catch (error) {
             console.error('[ReadReceiptPlugin] Critical initialization error:', error);
             throw error;

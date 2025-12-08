@@ -190,7 +190,7 @@ export const getMessageReadReceipts = (messageId: string): string[] => {
     }
     const users = receiptMap.get(messageId);
     if (!users) {
-        // console.log('ℹ️ [Store] No receipts found for message:', messageId);
+        if (window.__DEBUG_RR__?.verbose) console.log('ℹ️ [Store] No receipts found for message:', messageId);
         return [];
     }
     return Array.from(users);
@@ -243,7 +243,7 @@ export const updateReadReceipts = (messageId: string, userId: string, isRealTime
 
         // Only dispatch UI events for real-time updates, not initial loads
         if (isRealTimeUpdate) {
-            // console.log('📢 [Store] Dispatching real-time receipt update event');
+            if (window.__DEBUG_RR__?.verbose) console.log('📢 [Store] Dispatching real-time receipt update event');
             
             // Dispatch event to trigger UI updates
             const event = new CustomEvent(STORE_UPDATE_EVENT, {
@@ -257,7 +257,7 @@ export const updateReadReceipts = (messageId: string, userId: string, isRealTime
             });
             window.dispatchEvent(event);
         } else {
-            // console.log('🔇 [Store] Skipping UI event for initial receipt load');
+            if (window.__DEBUG_RR__?.verbose) console.log('🔇 [Store] Skipping UI event for initial receipt load');
         }
     } else {
         // console.log('ℹ️ [Store] Receipt already exists:', {
@@ -306,7 +306,7 @@ export const updateReceipts = (messageId: string, userId: string, isRealTimeUpda
 
     try {
         // Enhanced Redux action with DM support
-        // console.log('📢 [Store] Dispatching receipt update for messageId:', messageId);
+        if (window.__DEBUG_RR__?.verbose) console.log('📢 [Store] Dispatching receipt update for messageId:', messageId);
         const channelId = messageId.split(':')[0];
         
         // First update the receipt map
@@ -320,7 +320,7 @@ export const updateReceipts = (messageId: string, userId: string, isRealTimeUpda
         store.dispatch(addReader(payload));
         
         // Then dispatch a custom event for immediate UI update
-        // console.log('📣 [Store] Broadcasting receipt update event');
+        if (window.__DEBUG_RR__?.verbose) console.log('📣 [Store] Broadcasting receipt update event');
         const event = new CustomEvent(STORE_UPDATE_EVENT, {
             detail: {
                 type: 'receipt_added',
@@ -447,13 +447,13 @@ const loadingChannels = new Set<string>();
 export const loadInitialReceipts = async (channelId: string, dispatch?: Dispatch, isInitialLoad: boolean = true): Promise<void> => {
     // Prevent concurrent loads for the same channel
     if (loadingChannels.has(channelId)) {
-        // console.log(`⏸️ [Store] Channel ${channelId} already loading, skipping duplicate request`);
+        if (window.__DEBUG_RR__?.verbose) console.log(`⏸️ [Store] Channel ${channelId} already loading, skipping duplicate request`);
         return;
     }
     
     loadingChannels.add(channelId);
     
-    // console.log('🔄 [Store] Loading receipts for channel:', { channelId, isInitialLoad });
+    if (window.__DEBUG_RR__?.verbose) console.log('🔄 [Store] Loading receipts for channel:', { channelId, isInitialLoad });
     
     try {
         // Fetch both receipts and channel reads in parallel
@@ -591,7 +591,7 @@ export const loadInitialReceipts = async (channelId: string, dispatch?: Dispatch
                     }));
                 }
             });
-            // console.log('✅ [Store] Added readers individually to preserve WebSocket state for channel:', channelId);
+            if (window.__DEBUG_RR__?.verbose) console.log('✅ [Store] Added readers individually to preserve WebSocket state for channel:', channelId);
         }
 
         // console.log('💾 [Store] Updated maps:', {
@@ -608,7 +608,7 @@ export const loadInitialReceipts = async (channelId: string, dispatch?: Dispatch
 
         // Only dispatch UI update events for real-time updates, not initial loads
         if (!isInitialLoad) {
-            // console.log('📢 [Store] Dispatching store update event for real-time update');
+            if (window.__DEBUG_RR__?.verbose) console.log('📢 [Store] Dispatching store update event for real-time update');
             
             // Dispatch event to trigger rerenders
             const event = new CustomEvent(STORE_UPDATE_EVENT, {
@@ -625,7 +625,7 @@ export const loadInitialReceipts = async (channelId: string, dispatch?: Dispatch
 
             window.dispatchEvent(event);
         } else {
-            // console.log('🔇 [Store] Skipping UI update event for initial load (prevents "Seen by" flash)');
+            if (window.__DEBUG_RR__?.verbose) console.log('🔇 [Store] Skipping UI update event for initial load (prevents "Seen by" flash)');
         }
         
         // console.log('📢 [Store] Data loading complete:', {
@@ -687,14 +687,14 @@ const loadingChannelReads = new Set<string>();
 export const loadChannelReads = async (channelId: string, isInitialLoad: boolean = true): Promise<void> => {
     // Prevent concurrent loads for the same channel
     if (loadingChannelReads.has(channelId)) {
-        // console.log(`⏸️ [Store] Channel reads for ${channelId} already loading, skipping duplicate request`);
+        if (window.__DEBUG_RR__?.verbose) console.log(`⏸️ [Store] Channel reads for ${channelId} already loading, skipping duplicate request`);
         return;
     }
     
     loadingChannelReads.add(channelId);
     
     try {
-        // console.log('📖 [Store] Loading channel reads:', { channelId, isInitialLoad });
+        if (window.__DEBUG_RR__?.verbose) console.log('📖 [Store] Loading channel reads:', { channelId, isInitialLoad });
         
         const response = await fetch(
             `/plugins/mattermost-readreceipts/api/v1/channel/${channelId}/reads`,
@@ -771,7 +771,7 @@ export const loadChannelReads = async (channelId: string, isInitialLoad: boolean
 
         // Only dispatch UI update events for real-time updates, not initial loads
         if (!isInitialLoad) {
-            // console.log('📢 [Store] Dispatching channel reads update event for real-time update');
+            if (window.__DEBUG_RR__?.verbose) console.log('📢 [Store] Dispatching channel reads update event for real-time update');
             
             // Trigger UI update
             const event = new CustomEvent(STORE_UPDATE_EVENT, {
@@ -786,7 +786,7 @@ export const loadChannelReads = async (channelId: string, isInitialLoad: boolean
             });
             window.dispatchEvent(event);
         } else {
-            // console.log('🔇 [Store] Skipping UI update event for initial channel reads load');
+            if (window.__DEBUG_RR__?.verbose) console.log('🔇 [Store] Skipping UI update event for initial channel reads load');
         }
 
     } catch (error) {
@@ -817,9 +817,9 @@ export async function fetchPluginConfig(): Promise<void> {
             visibilityThresholdMs = config.visibility_threshold_ms;
             if (!visibilityThresholdMs) {
                 visibilityThresholdMs = 2000; // Reset to default if received 0
-                // console.log('⚙️ [Store] Invalid threshold received, using default:', visibilityThresholdMs);
+                if (window.__DEBUG_RR__?.verbose) console.log('⚙️ [Store] Invalid threshold received, using default:', visibilityThresholdMs);
             }
-            // console.log('⚙️ [Store] Updated visibility threshold:', visibilityThresholdMs);
+            if (window.__DEBUG_RR__?.verbose) console.log('⚙️ [Store] Updated visibility threshold:', visibilityThresholdMs);
         }
     } catch (error) {
         console.error('❌ [Store] Failed to fetch plugin config:', error);
