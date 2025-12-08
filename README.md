@@ -27,7 +27,7 @@ WhatsApp/Telegram-style **"Seen by..."** indicators for Mattermost. Get real-tim
 
 ## 📦 Installation
 
-1. Download the latest `mattermost-readreceipts-*.tar.gz` from releases
+1. Download the latest release: **[mattermost-readreceipts-2025.12.08.1407.tar.gz](https://github.com/ghaffaria/Mattermost-Read-Receipts/releases/download/v0.1.2/mattermost-readreceipts-2025.12.08.1407.tar.gz)**
 2. Go to **System Console → Plugins → Plugin Management**
 3. Upload and enable the plugin
 4. Done! Receipts will appear next to messages
@@ -62,7 +62,7 @@ Navigate to **System Console → Plugins → Read Receipts**
 ## 🏗️ Building from Source
 
 ```bash
-git clone https://github.com/<your-org>/mattermost-readreceipts.git
+git clone https://github.com/ghaffaria/mattermost-readreceipts.git
 cd mattermost-readreceipts
 
 # Build everything
