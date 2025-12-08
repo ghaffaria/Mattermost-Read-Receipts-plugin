@@ -20,15 +20,6 @@ declare global {
 const READ_RECEIPT_EVENT = 'custom_mattermost-readreceipts_read_receipt';
 const CHANNEL_READERS_EVENT = 'custom_mattermost-readreceipts_channel_readers';
 
-const debug = {
-    log: (message: string, data?: any) => {
-        console.log(`[RR WebSocket] ${message}`, data);
-    },
-    error: (message: string, error?: any) => {
-        console.error(`[RR WebSocket] ❌ ${message}`, error);
-    }
-};
-
 interface MattermostPost {
     id: string;
     create_at: number;
@@ -49,15 +40,6 @@ export function handleWebSocketEvent(dispatch: Dispatch) {
         const { data, event: eventType } = msg;
         if (!data) return;
 
-        const debug = {
-            log: (category: string, ...args: any[]) => {
-                if (window.__DEBUG_RR__?.verbose) {
-                    console.log(`[RR ${category}]`, ...args);
-                }
-            },
-            error: (...args: any[]) => console.error('[RR Error]', ...args)
-        };
-
         if (eventType === READ_RECEIPT_EVENT) {
             // The data object from the WebSocket message includes:
             // MessageID, UserID (who performed the read), ChannelID, IsDM (from server)
@@ -66,7 +48,7 @@ export function handleWebSocketEvent(dispatch: Dispatch) {
             const { MessageID, UserID, ChannelID, IsDM, ReaderIDs } = data;
 
             if (!MessageID || !UserID) {
-                debug.error('Invalid read receipt data from WebSocket:', data);
+                console.error('[RR WebSocket] Invalid read receipt data:', data);
                 return;
             }
 
@@ -81,7 +63,6 @@ export function handleWebSocketEvent(dispatch: Dispatch) {
             const isActuallyDM = IsDM || channelInfo?.type === 'D';
 
             if (isActuallyDM) {
-                debug.log('DM', 'Processing DM read receipt via WebSocket', { MessageID, readerIds, ChannelID });
                 dispatch(addReader({
                     channelId: ChannelID,
                     postId: MessageID,
@@ -92,7 +73,6 @@ export function handleWebSocketEvent(dispatch: Dispatch) {
                 updateAndReinjectReceipt(ChannelID, MessageID, readerIds);
             } else {
                 // For regular/group channels
-                debug.log('Channel', 'Processing channel read receipt via WebSocket', { MessageID, readerIds, ChannelID });
                 dispatch(addReader({
                     channelId: ChannelID,
                     postId: MessageID,
@@ -117,13 +97,8 @@ export function handleWebSocketEvent(dispatch: Dispatch) {
                     userId: UserIDs.join(','),
                     isDM: channel?.type === 'D'
                 }));
-
-                debug.log('Channel', 'Updated channel readers', {
-                    channelId: ChannelID,
-                    readers: UserIDs
-                });
             } else {
-                debug.error('Invalid channel readers data:', data);
+                console.error('[RR WebSocket] Invalid channel readers data:', data);
             }
         }
     };
