@@ -257,3 +257,82 @@ Channel-level read status.
 **For small to medium teams** (< 50 users): Safe to deploy with monitoring.
 
 **For large organizations** (100+ users): Deploy to staging first for 1-2 weeks, then gradually roll out.
+
+---
+
+## 🔍 Debug Mode & Troubleshooting
+
+The plugin includes comprehensive debug logging that is **disabled by default** for clean console output. Enable it when troubleshooting issues.
+
+### Enable Debug Mode
+
+Open your browser console (F12 → Console) and run:
+
+```javascript
+window.__DEBUG_RR__ = { verbose: true };
+```
+
+Then refresh the page or switch channels to see debug output.
+
+### What Debug Mode Shows
+
+| Log Prefix | What It Tracks |
+|------------|----------------|
+| `[WebSocket Reinject]` | Real-time receipt updates via WebSocket |
+| `[RR DM]` | Direct message read receipt processing |
+| `[RR Channel]` | Channel/group message read receipts |
+| `[DOM Injection]` | Receipt element insertion into DOM |
+| `[VisibilityTracking]` | Message visibility detection and read events |
+| `[Store]` | Redux store operations and data loading |
+| `[RootObserver]` | DOM mutation observer events |
+| `[ReadReceiptPlugin]` | Plugin initialization and channel changes |
+
+### Common Debug Scenarios
+
+#### Scenario 1: Receipts Not Appearing
+1. Enable debug mode
+2. Send a message in a DM
+3. Look for:
+   - `[DOM Injection] Starting:` - Confirms injection attempted
+   - `[DOM Injection] Found X post elements` - Posts were found
+   - `[DOM Injection] Complete: { injectedCount: X }` - Number of receipts added
+
+#### Scenario 2: Real-time Updates Not Working
+1. Enable debug mode on **both** sender and receiver browsers
+2. Receiver reads a message
+3. On **receiver**, look for:
+   - `[VisibilityTracking] Sending read receipt for: XXXX`
+   - `[VisibilityTracking] Read receipt sent successfully`
+4. On **sender**, look for:
+   - `[RR DM] Processing DM read receipt via WebSocket`
+   - `[WebSocket Reinject] Will inject. Payload posts: X`
+
+#### Scenario 3: Channel Switch Issues
+1. Enable debug mode
+2. Switch between channels
+3. Look for:
+   - `[ReadReceiptPlugin] Channel change: oldChannel -> newChannel`
+   - `[DOM Injection] Result: { hasPayload: true, postCount: X }`
+
+### Server-Side Debugging
+
+Check Mattermost server logs for backend issues:
+
+```bash
+# Docker
+docker logs mattermost 2>&1 | grep -i "readreceipts" | tail -50
+
+# Systemd
+journalctl -u mattermost -n 100 | grep -i "readreceipts"
+
+# Log file
+tail -100 /opt/mattermost/logs/mattermost.log | grep -i "readreceipts"
+```
+
+### Disable Debug Mode
+
+```javascript
+delete window.__DEBUG_RR__;
+```
+
+Or simply refresh the page.
