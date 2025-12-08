@@ -172,10 +172,13 @@ export const getReadReceipts = (): Record<string, string[]> => {
         receipts[messageId] = Array.from(users);
     });
     
-    console.log('📖 [Store] Getting all read receipts:', {
-        messageCount: receiptMap.size,
-        messages: Array.from(receiptMap.keys())
-    });
+    // console.log('📖 [Store] Getting all read receipts:', {
+    
+    // messageCount: receiptMap.size,
+    
+    // messages: Array.from(receiptMap.keys())
+    
+    // });
     
     return receipts;
 };
@@ -187,7 +190,7 @@ export const getMessageReadReceipts = (messageId: string): string[] => {
     }
     const users = receiptMap.get(messageId);
     if (!users) {
-        console.log('ℹ️ [Store] No receipts found for message:', messageId);
+        // console.log('ℹ️ [Store] No receipts found for message:', messageId);
         return [];
     }
     return Array.from(users);
@@ -199,12 +202,17 @@ export const updateReadReceipts = (messageId: string, userId: string, isRealTime
         return;
     }
 
-    console.log('✏️ [Store] Updating receipts:', {
-        messageId,
-        userId,
-        isRealTimeUpdate,
-        beforeState: receiptMap.get(messageId)
-    });
+    // console.log('✏️ [Store] Updating receipts:', {
+
+    // messageId,
+
+    // userId,
+
+    // isRealTimeUpdate,
+
+    // beforeState: receiptMap.get(messageId)
+
+    // });
 
     if (!receiptMap.has(messageId)) {
         receiptMap.set(messageId, new Set());
@@ -215,12 +223,12 @@ export const updateReadReceipts = (messageId: string, userId: string, isRealTime
     users.add(userId);
 
     if (wasAdded) {
-        console.log('✅ [Store] Receipt added:', {
-            messageId,
-            userId,
-            isRealTimeUpdate,
-            afterState: Array.from(users)
-        });
+        // console.log('✅ [Store] Receipt added:', {
+        // messageId,
+        // userId,
+        // isRealTimeUpdate,
+        // afterState: Array.from(users)
+        // });
 
         // Get store and dispatch
         const store = getMattermostStore();
@@ -235,7 +243,7 @@ export const updateReadReceipts = (messageId: string, userId: string, isRealTime
 
         // Only dispatch UI events for real-time updates, not initial loads
         if (isRealTimeUpdate) {
-            console.log('📢 [Store] Dispatching real-time receipt update event');
+            // console.log('📢 [Store] Dispatching real-time receipt update event');
             
             // Dispatch event to trigger UI updates
             const event = new CustomEvent(STORE_UPDATE_EVENT, {
@@ -249,24 +257,24 @@ export const updateReadReceipts = (messageId: string, userId: string, isRealTime
             });
             window.dispatchEvent(event);
         } else {
-            console.log('🔇 [Store] Skipping UI event for initial receipt load');
+            // console.log('🔇 [Store] Skipping UI event for initial receipt load');
         }
     } else {
-        console.log('ℹ️ [Store] Receipt already exists:', {
-            messageId,
-            userId,
-            isRealTimeUpdate
-        });
+        // console.log('ℹ️ [Store] Receipt already exists:', {
+        // messageId,
+        // userId,
+        // isRealTimeUpdate
+        // });
     }
 };
 
 export const updateReceipts = (messageId: string, userId: string, isRealTimeUpdate: boolean = false) => {
-    console.log('✏️ [Store] Updating receipts:', {
-        messageId,
-        userId,
-        isRealTimeUpdate,
-        beforeState: receiptMap.get(messageId)
-    });
+    // console.log('✏️ [Store] Updating receipts:', {
+    // messageId,
+    // userId,
+    // isRealTimeUpdate,
+    // beforeState: receiptMap.get(messageId)
+    // });
 
     let readers = receiptMap.get(messageId);
     if (!readers) {
@@ -277,12 +285,17 @@ export const updateReceipts = (messageId: string, userId: string, isRealTimeUpda
     // Add the reader
     readers.add(userId);
 
-    console.log('✅ [Store] Receipt added:', {
-        messageId,
-        userId,
-        isRealTimeUpdate,
-        afterState: Array.from(readers)
-    });
+    // console.log('✅ [Store] Receipt added:', {
+
+    // messageId,
+
+    // userId,
+
+    // isRealTimeUpdate,
+
+    // afterState: Array.from(readers)
+
+    // });
 
     // Get store
     const store = getMattermostStore();
@@ -293,7 +306,7 @@ export const updateReceipts = (messageId: string, userId: string, isRealTimeUpda
 
     try {
         // Enhanced Redux action with DM support
-        console.log('📢 [Store] Dispatching receipt update for messageId:', messageId);
+        // console.log('📢 [Store] Dispatching receipt update for messageId:', messageId);
         const channelId = messageId.split(':')[0];
         
         // First update the receipt map
@@ -307,7 +320,7 @@ export const updateReceipts = (messageId: string, userId: string, isRealTimeUpda
         store.dispatch(addReader(payload));
         
         // Then dispatch a custom event for immediate UI update
-        console.log('📣 [Store] Broadcasting receipt update event');
+        // console.log('📣 [Store] Broadcasting receipt update event');
         const event = new CustomEvent(STORE_UPDATE_EVENT, {
             detail: {
                 type: 'receipt_added',
@@ -336,13 +349,19 @@ export const getUserProfiles = (): Record<string, MattermostUser> => {
         return {};
     }
 
-    console.log('👥 [Store] Getting user profiles:', {
-        count: Object.keys(profiles).length,
-        users: Object.keys(profiles).map(id => ({
-            id,
-            username: profiles[id].username
-        }))
-    });
+    // console.log('👥 [Store] Getting user profiles:', {
+
+    // count: Object.keys(profiles).length,
+
+    // users: Object.keys(profiles).map(id => ({
+
+    // id,
+
+    // username: profiles[id].username
+
+    // }))
+
+    // });
     return profiles;
 };
 
@@ -367,14 +386,14 @@ export const getUserDisplayName = (userId: string): string => {
         }
 
         const displayName = user.nickname || `${user.first_name || ''} ${user.last_name || ''}`.trim() || user.username || `User ${userId.substring(0, 8)}`;
-        console.log('👤 [Store] Getting display name:', {
-            userId,
-            displayName,
-            hasNickname: !!user.nickname,
-            hasFirstName: !!user.first_name,
-            hasLastName: !!user.last_name,
-            hasUsername: !!user.username
-        });
+        // console.log('👤 [Store] Getting display name:', {
+        // userId,
+        // displayName,
+        // hasNickname: !!user.nickname,
+        // hasFirstName: !!user.first_name,
+        // hasLastName: !!user.last_name,
+        // hasUsername: !!user.username
+        // });
         return displayName;
     } catch (error) {
         console.error('❌ [Store] Error getting user display name:', error);
@@ -428,13 +447,13 @@ const loadingChannels = new Set<string>();
 export const loadInitialReceipts = async (channelId: string, dispatch?: Dispatch, isInitialLoad: boolean = true): Promise<void> => {
     // Prevent concurrent loads for the same channel
     if (loadingChannels.has(channelId)) {
-        console.log(`⏸️ [Store] Channel ${channelId} already loading, skipping duplicate request`);
+        // console.log(`⏸️ [Store] Channel ${channelId} already loading, skipping duplicate request`);
         return;
     }
     
     loadingChannels.add(channelId);
     
-    console.log('🔄 [Store] Loading receipts for channel:', { channelId, isInitialLoad });
+    // console.log('🔄 [Store] Loading receipts for channel:', { channelId, isInitialLoad });
     
     try {
         // Fetch both receipts and channel reads in parallel
@@ -474,18 +493,18 @@ export const loadInitialReceipts = async (channelId: string, dispatch?: Dispatch
         ]);
 
         // Log raw API responses before any processing
-        console.log('踏 [Store] API Response - loadInitialReceipts - Raw ReceiptsData:', {
-            endpoint: `/plugins/mattermost-readreceipts/api/v1/receipts?channel_id=${channelId}`,
-            status: receiptsResponse.status,
-            responseBody: JSON.stringify(receiptsData, null, 2),
-            timestamp: new Date().toISOString()
-        });
-        console.log('踏 [Store] API Response - loadInitialReceipts - Raw ChannelReads:', {
-            endpoint: `/plugins/mattermost-readreceipts/api/v1/channel/${channelId}/reads`,
-            status: readsResponse.status,
-            responseBody: JSON.stringify(channelReads, null, 2),
-            timestamp: new Date().toISOString()
-        });
+        // console.log('踏 [Store] API Response - loadInitialReceipts - Raw ReceiptsData:', {
+        // endpoint: `/plugins/mattermost-readreceipts/api/v1/receipts?channel_id=${channelId}`,
+        // status: receiptsResponse.status,
+        // responseBody: JSON.stringify(receiptsData, null, 2),
+        // timestamp: new Date().toISOString()
+        // });
+        // console.log('踏 [Store] API Response - loadInitialReceipts - Raw ChannelReads:', {
+        // endpoint: `/plugins/mattermost-readreceipts/api/v1/channel/${channelId}/reads`,
+        // status: readsResponse.status,
+        // responseBody: JSON.stringify(channelReads, null, 2),
+        // timestamp: new Date().toISOString()
+        // });
         
         // Ensure we have arrays even if backend returns null
         receiptsData = receiptsData || [];
@@ -499,12 +518,17 @@ export const loadInitialReceipts = async (channelId: string, dispatch?: Dispatch
             timestamp: event.Timestamp
         }));
 
-        console.log('📥 [Store] Received data:', {
-            channelId,
-            messageReceiptsCount: messageReceipts.length,
-            channelReadsCount: channelReads.length,
-            isInitialLoad
-        });
+        // console.log('📥 [Store] Received data:', {
+
+        // channelId,
+
+        // messageReceiptsCount: messageReceipts.length,
+
+        // channelReadsCount: channelReads.length,
+
+        // isInitialLoad
+
+        // });
 
         // Update channel reads map, handling null/empty data
         const channelReadersMap = new Map<string, {lastPostId: string, lastSeenAt: number}>();
@@ -567,19 +591,24 @@ export const loadInitialReceipts = async (channelId: string, dispatch?: Dispatch
                     }));
                 }
             });
-            console.log('✅ [Store] Added readers individually to preserve WebSocket state for channel:', channelId);
+            // console.log('✅ [Store] Added readers individually to preserve WebSocket state for channel:', channelId);
         }
 
-        console.log('💾 [Store] Updated maps:', {
-            channelId,
-            messageCount: messageReceiptsMap.size,
-            messages: Array.from(messageReceiptsMap.keys()),
-            isInitialLoad
-        });
+        // console.log('💾 [Store] Updated maps:', {
+
+        // channelId,
+
+        // messageCount: messageReceiptsMap.size,
+
+        // messages: Array.from(messageReceiptsMap.keys()),
+
+        // isInitialLoad
+
+        // });
 
         // Only dispatch UI update events for real-time updates, not initial loads
         if (!isInitialLoad) {
-            console.log('📢 [Store] Dispatching store update event for real-time update');
+            // console.log('📢 [Store] Dispatching store update event for real-time update');
             
             // Dispatch event to trigger rerenders
             const event = new CustomEvent(STORE_UPDATE_EVENT, {
@@ -596,14 +625,18 @@ export const loadInitialReceipts = async (channelId: string, dispatch?: Dispatch
 
             window.dispatchEvent(event);
         } else {
-            console.log('🔇 [Store] Skipping UI update event for initial load (prevents "Seen by" flash)');
+            // console.log('🔇 [Store] Skipping UI update event for initial load (prevents "Seen by" flash)');
         }
         
-        console.log('📢 [Store] Data loading complete:', {
-            type: isInitialLoad ? 'initial_load' : 'real_time_update',
-            channelId,
-            messageCount: messageReceiptsMap.size
-        });
+        // console.log('📢 [Store] Data loading complete:', {
+        
+        // type: isInitialLoad ? 'initial_load' : 'real_time_update',
+        
+        // channelId,
+        
+        // messageCount: messageReceiptsMap.size
+        
+        // });
 
     } catch (error) {
         console.error('❌ [Store] Failed to load channel data:', {
@@ -654,14 +687,14 @@ const loadingChannelReads = new Set<string>();
 export const loadChannelReads = async (channelId: string, isInitialLoad: boolean = true): Promise<void> => {
     // Prevent concurrent loads for the same channel
     if (loadingChannelReads.has(channelId)) {
-        console.log(`⏸️ [Store] Channel reads for ${channelId} already loading, skipping duplicate request`);
+        // console.log(`⏸️ [Store] Channel reads for ${channelId} already loading, skipping duplicate request`);
         return;
     }
     
     loadingChannelReads.add(channelId);
     
     try {
-        console.log('📖 [Store] Loading channel reads:', { channelId, isInitialLoad });
+        // console.log('📖 [Store] Loading channel reads:', { channelId, isInitialLoad });
         
         const response = await fetch(
             `/plugins/mattermost-readreceipts/api/v1/channel/${channelId}/reads`,
@@ -682,14 +715,14 @@ export const loadChannelReads = async (channelId: string, isInitialLoad: boolean
         const reads: ChannelRead[] = await response.json();
         
         // Log raw API response before any processing
-        console.log('踏 [Store] API Response - loadChannelReads:', {
-            endpoint: `/plugins/mattermost-readreceipts/api/v1/channel/${channelId}/reads`,
-            status: response.status,
-            responseBody: JSON.stringify(reads, null, 2),
-            count: reads?.length || 0,
-            hasData: !!reads,
-            timestamp: new Date().toISOString()
-        });
+        // console.log('踏 [Store] API Response - loadChannelReads:', {
+        // endpoint: `/plugins/mattermost-readreceipts/api/v1/channel/${channelId}/reads`,
+        // status: response.status,
+        // responseBody: JSON.stringify(reads, null, 2),
+        // count: reads?.length || 0,
+        // hasData: !!reads,
+        // timestamp: new Date().toISOString()
+        // });
 
         // Initialize channel map if needed
         if (!channelReadMap.has(channelId)) {
@@ -724,16 +757,21 @@ export const loadChannelReads = async (channelId: string, isInitialLoad: boolean
             }
         });
 
-        console.log('✅ [Store] Channel reads loaded:', {
-            channelId,
-            readsCount: channelReads.size,
-            updatedPosts: Array.from(receiptMap.keys()),
-            isInitialLoad
-        });
+        // console.log('✅ [Store] Channel reads loaded:', {
+
+        // channelId,
+
+        // readsCount: channelReads.size,
+
+        // updatedPosts: Array.from(receiptMap.keys()),
+
+        // isInitialLoad
+
+        // });
 
         // Only dispatch UI update events for real-time updates, not initial loads
         if (!isInitialLoad) {
-            console.log('📢 [Store] Dispatching channel reads update event for real-time update');
+            // console.log('📢 [Store] Dispatching channel reads update event for real-time update');
             
             // Trigger UI update
             const event = new CustomEvent(STORE_UPDATE_EVENT, {
@@ -748,7 +786,7 @@ export const loadChannelReads = async (channelId: string, isInitialLoad: boolean
             });
             window.dispatchEvent(event);
         } else {
-            console.log('🔇 [Store] Skipping UI update event for initial channel reads load');
+            // console.log('🔇 [Store] Skipping UI update event for initial channel reads load');
         }
 
     } catch (error) {
@@ -779,9 +817,9 @@ export async function fetchPluginConfig(): Promise<void> {
             visibilityThresholdMs = config.visibility_threshold_ms;
             if (!visibilityThresholdMs) {
                 visibilityThresholdMs = 2000; // Reset to default if received 0
-                console.log('⚙️ [Store] Invalid threshold received, using default:', visibilityThresholdMs);
+                // console.log('⚙️ [Store] Invalid threshold received, using default:', visibilityThresholdMs);
             }
-            console.log('⚙️ [Store] Updated visibility threshold:', visibilityThresholdMs);
+            // console.log('⚙️ [Store] Updated visibility threshold:', visibilityThresholdMs);
         }
     } catch (error) {
         console.error('❌ [Store] Failed to fetch plugin config:', error);

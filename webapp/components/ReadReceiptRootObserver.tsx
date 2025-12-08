@@ -23,18 +23,18 @@ interface MattermostState {
 
 const getAuthorId = (postId: string): string => {
     const mmGlobalStore = (window as any).store;
-    console.log('DEBUG: [RootObserver] window.store for postId', postId, 'is', mmGlobalStore ? 'available' : 'NOT AVAILABLE');
+    // console.log('DEBUG: [RootObserver] window.store for postId', postId, 'is', mmGlobalStore ? 'available' : 'NOT AVAILABLE');
     if (!mmGlobalStore) {
         return '';
     }
 
     const state = mmGlobalStore.getState();
     const post = state?.entities?.posts?.posts?.[postId];
-    console.log('🔍 [RootObserver] Getting author from store:', {
-        postId,
-        authorId: post?.user_id,
-        hasPost: !!post
-    });
+    // console.log('🔍 [RootObserver] Getting author from store:', {
+    // postId,
+    // authorId: post?.user_id,
+    // hasPost: !!post
+    // });
     return post?.user_id || '';
 };
 
@@ -53,22 +53,26 @@ const ReadReceiptRootObserver: React.FC = () => {
                 return;
             }
 
-            console.log('📨 [RootObserver] Processing post:', {
-                postId,
-                nodeId: id,
-                hasReceiptContainer: node.querySelector('.post-receipt-container') !== null
-            });
+            // console.log('📨 [RootObserver] Processing post:', {
+
+            // postId,
+
+            // nodeId: id,
+
+            // hasReceiptContainer: node.querySelector('.post-receipt-container') !== null
+
+            // });
 
             // Check if we already attached a receipt
             if (node.querySelector('.post-receipt-container')) {
-                console.log('ℹ️ [RootObserver] Receipt already attached:', postId);
+                // console.log('ℹ️ [RootObserver] Receipt already attached:', postId);
                 return;
             }
 
             // Find or create the container for our receipt component
             let receiptContainer = node.querySelector('.post-receipt-mount-point');
             if (!receiptContainer) {
-                console.log('🏗️ [RootObserver] Creating receipt container for:', postId);
+                // console.log('🏗️ [RootObserver] Creating receipt container for:', postId);
                 receiptContainer = document.createElement('div');
                 receiptContainer.className = 'post-receipt-mount-point';
                 
@@ -90,7 +94,7 @@ const ReadReceiptRootObserver: React.FC = () => {
             const post = state?.entities?.posts?.posts?.[postId];
             const channelId = post?.channel_id;
 
-            console.log('🎨 [RootObserver] Rendering PostReceipt for:', { postId, authorId, channelId });
+            // console.log('🎨 [RootObserver] Rendering PostReceipt for:', { postId, authorId, channelId });
             if (!pluginStore) {
                 console.error('CRITICAL DEBUG: [RootObserver] pluginStore is null/undefined before ReactDOM.render!');
                 return;
@@ -138,7 +142,7 @@ const ReadReceiptRootObserver: React.FC = () => {
                 });
                 
                 observer.observe(target, { childList: true, subtree: true });
-                console.log('👀 [RootObserver] Attached to:', target);
+                // console.log('👀 [RootObserver] Attached to:', target);
 
                 // Also handle any existing posts
                 target.querySelectorAll('[data-testid="postView"]').forEach((node) => {

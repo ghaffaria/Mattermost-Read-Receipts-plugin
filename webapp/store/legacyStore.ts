@@ -26,21 +26,21 @@ export const STORE_UPDATE_EVENT = 'mattermost-readreceipts_store_update';
 
 export const setMattermostStore = (externalStore: Store<MattermostState>) => {
     mattermostStore = externalStore;
-    console.log('🔌 [Store] Initialized with Mattermost store:', {
-        hasStore: !!externalStore,
-        userProfiles: Object.keys(externalStore.getState().entities.users.profiles).length
-    });
+    // console.log('🔌 [Store] Initialized with Mattermost store:', {
+    // hasStore: !!externalStore,
+    // userProfiles: Object.keys(externalStore.getState().entities.users.profiles).length
+    // });
 };
 
 export const getUserProfiles = (): Record<string, MattermostUser> => {
     const profiles = mattermostStore.getState().entities.users.profiles;
-    console.log('👥 [Store] Getting user profiles:', {
-        count: Object.keys(profiles).length,
-        users: Object.keys(profiles).map(id => ({
-            id,
-            username: profiles[id].username
-        }))
-    });
+    // console.log('👥 [Store] Getting user profiles:', {
+    // count: Object.keys(profiles).length,
+    // users: Object.keys(profiles).map(id => ({
+    // id,
+    // username: profiles[id].username
+    // }))
+    // });
     return profiles;
 };
 
@@ -53,11 +53,11 @@ export const getUserDisplayName = (userId: string): string => {
     }
 
     const displayName = user.nickname || `${user.first_name || ''} ${user.last_name || ''}`.trim() || user.username;
-    console.log('👤 [Store] Getting display name:', {
-        userId,
-        displayName,
-        user
-    });
+    // console.log('👤 [Store] Getting display name:', {
+    // userId,
+    // displayName,
+    // user
+    // });
     return displayName;
 };
 
@@ -68,7 +68,7 @@ interface Receipt {
 }
 
 export const loadInitialReceipts = async (channelId: string): Promise<void> => {
-    console.log('🔄 [Store] Loading receipts for channel:', channelId);
+    // console.log('🔄 [Store] Loading receipts for channel:', channelId);
     
     try {
         const response = await fetch(`/plugins/mattermost-readreceipts/api/v1/receipts?channel_id=${encodeURIComponent(channelId)}`, {
@@ -85,11 +85,11 @@ export const loadInitialReceipts = async (channelId: string): Promise<void> => {
         }
 
         const { user_ids: readers } = await response.json();
-        console.log('📥 [Store] Received channel readers:', {
-            channelId,
-            count: readers.length,
-            readers
-        });
+        // console.log('📥 [Store] Received channel readers:', {
+        // channelId,
+        // count: readers.length,
+        // readers
+        // });
 
         // Update Redux store
         store.dispatch(addReader({ 
@@ -98,10 +98,13 @@ export const loadInitialReceipts = async (channelId: string): Promise<void> => {
             userId: readers.join(',') // Temporary storage until we migrate fully
         }));
 
-        console.log('💾 [Store] Updated Redux store:', {
-            channelId,
-            readerCount: readers.length
-        });
+        // console.log('💾 [Store] Updated Redux store:', {
+
+        // channelId,
+
+        // readerCount: readers.length
+
+        // });
 
         // Dispatch legacy event for backward compatibility
         const event = new CustomEvent(STORE_UPDATE_EVENT, {
@@ -131,7 +134,7 @@ export interface PluginConfig {
 }
 
 export const fetchPluginConfig = async (): Promise<PluginConfig> => {
-    console.log('⚙️ [Store] Fetching plugin config...');
+    // console.log('⚙️ [Store] Fetching plugin config...');
     
     try {
         const response = await fetch('/plugins/mattermost-readreceipts/api/v1/config', {
@@ -148,7 +151,7 @@ export const fetchPluginConfig = async (): Promise<PluginConfig> => {
         }
 
         const config = await response.json();
-        console.log('✅ [Store] Plugin config loaded:', config);
+        // console.log('✅ [Store] Plugin config loaded:', config);
         return config;
     } catch (error) {
         console.error('❌ [Store] Failed to fetch plugin config:', error);

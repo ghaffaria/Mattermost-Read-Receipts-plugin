@@ -100,7 +100,7 @@ export const getStore = (): EnhancedStore => {
 
 // Initialize the store singleton
 export const store = getStore();
-console.log('DEBUG: pluginStore.ts - Store created:', store);
+// console.log('DEBUG: pluginStore.ts - Store created:', store);
 
 // Helper to check store initialization
 export const isStoreInitialized = () => {
@@ -125,7 +125,7 @@ export const ensureStoreInitialized = () => {
 let initializationPromise: Promise<void> | null = null;
 
 export const setMattermostStore = async (mattermostStore: Store<any>): Promise<void> => {
-    console.log('DEBUG: setMattermostStore called. Mattermost store valid:', !!(mattermostStore && mattermostStore.getState));
+    // console.log('DEBUG: setMattermostStore called. Mattermost store valid:', !!(mattermostStore && mattermostStore.getState));
     if (initializationPromise) {
         return initializationPromise;
     }
@@ -149,14 +149,17 @@ export const setMattermostStore = async (mattermostStore: Store<any>): Promise<v
                 const userProfiles = state?.entities?.users?.profiles || {};
                 const profileCount = Object.keys(userProfiles).length;
 
-                console.log('🔌 [Store] Initialized with Mattermost store:', {
-                    hasStore: !!mattermostStore,
-                    userProfiles: profileCount
-                });
+                // console.log('🔌 [Store] Initialized with Mattermost store:', {
+
+                // hasStore: !!mattermostStore,
+
+                // userProfiles: profileCount
+
+                // });
 
                 // Mark store as initialized
                 storeInitialized = true;
-                console.log('DEBUG: storeInitialized set to true. Profiles count:', profileCount);
+                // console.log('DEBUG: storeInitialized set to true. Profiles count:', profileCount);
                 localStorage.setItem(STORE_INITIALIZED_KEY, 'true');
                 resolve();
             } catch (error) {
