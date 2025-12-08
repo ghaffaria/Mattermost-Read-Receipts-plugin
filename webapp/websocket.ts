@@ -60,13 +60,20 @@ export function handleWebSocketEvent(dispatch: Dispatch) {
 
         if (eventType === READ_RECEIPT_EVENT) {
             // The data object from the WebSocket message includes:
-            // MessageID, UserID (who performed the read), ChannelID, IsDM (from server), ReaderIDs (array of all users who read this post)
+            // MessageID, UserID (who performed the read), ChannelID, IsDM (from server)
+            // For DMs: ReaderIDs (array of all users who read this post)
+            // For GM/channels: may only have UserID
             const { MessageID, UserID, ChannelID, IsDM, ReaderIDs } = data;
 
-            if (!MessageID || !UserID || !ReaderIDs) { // Ensure ReaderIDs is present
+            if (!MessageID || !UserID) {
                 debug.error('Invalid read receipt data from WebSocket:', data);
                 return;
             }
+
+            // Build reader IDs array - use ReaderIDs if present, otherwise use UserID
+            const readerIds: string[] = ReaderIDs && Array.isArray(ReaderIDs)
+                ? ReaderIDs
+                : [UserID];
 
             // Determine if it's a DM channel more reliably
             const store = (window as any).store;
@@ -74,28 +81,29 @@ export function handleWebSocketEvent(dispatch: Dispatch) {
             const isActuallyDM = IsDM || channelInfo?.type === 'D';
 
             if (isActuallyDM) {
-                debug.log('DM', 'Processing DM read receipt via WebSocket', { MessageID, ReaderIDs, ChannelID });
+                debug.log('DM', 'Processing DM read receipt via WebSocket', { MessageID, readerIds, ChannelID });
                 dispatch(addReader({
                     channelId: ChannelID,
                     postId: MessageID,
-                    userId: ReaderIDs.join(','), // Use all reader IDs from the event
+                    userId: readerIds.join(','),
                     isDM: true
                 }));
                 // Also trigger DOM re-injection for real-time updates
-                updateAndReinjectReceipt(ChannelID, MessageID, ReaderIDs);
+                updateAndReinjectReceipt(ChannelID, MessageID, readerIds);
             } else {
-                // For regular channels, also use ReaderIDs for consistency
-                debug.log('Channel', 'Processing channel read receipt via WebSocket', { MessageID, ReaderIDs, ChannelID });
+                // For regular/group channels
+                debug.log('Channel', 'Processing channel read receipt via WebSocket', { MessageID, readerIds, ChannelID });
                 dispatch(addReader({
                     channelId: ChannelID,
                     postId: MessageID,
-                    userId: ReaderIDs.join(','), // Use all reader IDs from the event
+                    userId: readerIds.join(','),
                     isDM: false
                 }));
                 // Also trigger DOM re-injection for real-time updates
-                updateAndReinjectReceipt(ChannelID, MessageID, ReaderIDs);
+                updateAndReinjectReceipt(ChannelID, MessageID, readerIds);
             }
         }
+
 
         if (eventType === CHANNEL_READERS_EVENT) {
             const { ChannelID, LastPostID, UserIDs } = data;
