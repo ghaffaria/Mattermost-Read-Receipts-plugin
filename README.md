@@ -1,270 +1,200 @@
 # Mattermost Read Receipts Plugin
 
+<p align="center">
+  <img src="https://img.shields.io/badge/Mattermost-v6.0+-blue" alt="Mattermost v6.0+"/>
+  <img src="https://img.shields.io/badge/License-MIT-green" alt="MIT License"/>
+</p>
 
-
-WhatsApp / Telegram style "Seen by ..." indicators for every post in Mattermost. Get real-time visibility into who has read messages in your channels.
+WhatsApp/Telegram-style **"Seen by..."** indicators for Mattermost. Get real-time visibility into who has read your messages.
 
 <p align="center">
   <img src="image/channel.jpg" width="45%"/>
-  <img src="image/user1.jpg"  width="45%"/>
+  <img src="image/user1.jpg" width="45%"/>
 </p>
 
-## Architecture and Flow
+---
 
-### Component Overview
+## ✨ Features
 
-```mermaid
-graph TB
-    subgraph Frontend
-        RP[ReadReceiptPlugin]
-        RRO[ReadReceiptRootObserver]
-        PR[PostReceipt Component]
-        VT[VisibilityTracker]
-        RS[Redux Store]
-    end
-    
-    subgraph Backend
-        API[API Endpoints]
-        WS[WebSocket Server]
-        DB[(Database)]
-    end
-    
-    RP -->|Initializes| RS
-    RP -->|Registers| RRO
-    RP -->|Registers| PR
-    RRO -->|Tracks| VT
-    VT -->|Reports Visibility| PR
-    PR -->|Updates| RS
-    RS -->|WebSocket Events| WS
-    WS -->|Real-time Updates| RS
-    PR -->|Read Status| API
-    API -->|Store/Retrieve| DB
+- **Real-time read receipts** — See who has read your messages instantly
+- **Works everywhere** — Direct messages, group messages, and channels
+- **Smart detection** — Messages must be visible for 2+ seconds to count as "read"
+- **Persistent** — Receipts survive page refreshes and server restarts
+- **Automatic cleanup** — Old receipts are purged based on retention settings
+- **Modern UI** — Clean, inline "Seen by..." badges
+
+---
+
+## 📦 Installation
+
+1. Download the latest `mattermost-readreceipts-*.tar.gz` from releases
+2. Go to **System Console → Plugins → Plugin Management**
+3. Upload and enable the plugin
+4. Done! Receipts will appear next to messages
+
+---
+
+## ⚙️ Configuration
+
+Navigate to **System Console → Plugins → Read Receipts**
+
+| Setting | Default | Description |
+|---------|---------|-------------|
+| **Enable Read Receipts** | `true` | Master on/off switch |
+| **Visibility Threshold** | `2000ms` | How long a message must be visible to be marked as read |
+| **Retention Days** | `30` | Automatic cleanup of old receipts |
+| **Log Level** | `info` | Set to `debug` for troubleshooting |
+
+---
+
+## 🔧 Compatibility
+
+| Component | Minimum Version |
+|-----------|-----------------|
+| Mattermost Server | v6.0+ (Team or Enterprise) |
+| PostgreSQL | 13.x+ |
+| MySQL/MariaDB | 8.0+ / 10.6+ |
+
+> **Note:** The plugin uses Mattermost's existing database connection. Ensure the DSN is properly configured in **System Console → Environment → Database** (not masked).
+
+---
+
+## 🏗️ Building from Source
+
+```bash
+git clone https://github.com/<your-org>/mattermost-readreceipts.git
+cd mattermost-readreceipts
+
+# Build everything
+make dist
+
+# Output: dist/mattermost-readreceipts-<timestamp>.tar.gz
+```
+
+### Development with Docker
+
+```bash
+docker-compose up -d        # Start Mattermost + Postgres
+make dev                    # Build and deploy to running instance
+```
+
+---
+
+## 🔌 Architecture
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                        Frontend                             │
+│  ┌──────────────┐  ┌──────────────┐  ┌──────────────────┐  │
+│  │PluginEntry   │→ │PostReceipt   │→ │VisibilityTracker │  │
+│  └──────────────┘  └──────────────┘  └──────────────────┘  │
+│         ↓                  ↓                   ↓            │
+│  ┌──────────────────────────────────────────────────────┐  │
+│  │              Redux Store + WebSocket                  │  │
+│  └──────────────────────────────────────────────────────┘  │
+└─────────────────────────────────────────────────────────────┘
+                              ↕ WebSocket
+┌─────────────────────────────────────────────────────────────┐
+│                        Backend                              │
+│  ┌──────────────┐  ┌──────────────┐  ┌──────────────────┐  │
+│  │  API Layer   │→ │   Plugin     │→ │   Database       │  │
+│  └──────────────┘  └──────────────┘  └──────────────────┘  │
+└─────────────────────────────────────────────────────────────┘
 ```
 
 ### Message Read Flow
 
-```mermaid
-sequenceDiagram
-    participant U as User
-    participant VT as VisibilityTracker
-    participant C as Client Store
-    participant WS as WebSocket
-    participant S as Server
-    participant DB as Database
-    
-    U->>VT: Views message
-    VT->>VT: Wait 2000ms
-    VT->>C: Mark as read
-    C->>WS: Send read event
-    WS->>S: Forward event
-    S->>DB: Store receipt
-    S->>WS: Broadcast to channel
-    WS->>C: Update UI
-```
-
-
-
-
-
-WhatsApp / Telegram style “Seen by …” indicators for every post in Mattermost.
-
-<p align="center">
-  <!-- replace with real images or delete -->
-  <img src="image/channel.jpg" width="45%"/>
-  <img src="image/user1.jpg"  width="45%"/>
-</p>
+1. User views a message in viewport
+2. VisibilityTracker waits for visibility threshold (2 seconds default)
+3. Read receipt is sent to server via REST API
+4. Server stores receipt and broadcasts WebSocket event
+5. All channel participants receive real-time update
+6. "Seen by..." indicator appears for message author
 
 ---
 
-## Core Components
+## 🚨 Troubleshooting
 
-### Frontend Components
+| Issue | Solution |
+|-------|----------|
+| Receipts don't appear | Check browser console for errors; refresh the page |
+| Plugin won't activate | Verify database DSN is not masked in System Console |
+| "Seen by" missing after channel switch | This was fixed in the latest version - please update |
+| Receipts not updating in real-time | Check WebSocket connection in browser DevTools |
 
-1. **ReadReceiptPlugin** (`webapp/plugin.tsx`)
-   - Entry point for the plugin
-   - Initializes Redux store
-   - Registers WebSocket handlers
-   - Sets up UI components
+### Debug Mode
 
-2. **ReadReceiptRootObserver** (`webapp/components/ReadReceiptRootObserver.tsx`)
-   - Manages visibility tracking
-   - Coordinates with VisibilityTracker
+Enable verbose logging in browser console:
 
-3. **PostReceipt** (`webapp/components/PostReceipt.tsx`)
-   - Renders "Seen by..." indicators
-   - Handles real-time updates
-
-4. **VisibilityTracker** (`webapp/components/VisibilityTracker.tsx`)
-   - Uses Intersection Observer API
-   - Tracks message visibility
-   - Triggers read events
-
-### Backend Components
-
-1. **Plugin Server** (`server/plugin.go`)
-   - Main plugin implementation
-   - Handles initialization
-   - Manages database connections
-
-2. **API Handler** (`server/api.go`)
-   - REST endpoints implementation
-   - WebSocket event handling
-   - Authentication middleware
-
-3. **Store Layer** (`server/store/`)
-   - Database interactions
-   - Supports MySQL and PostgreSQL
-   - Handles migrations
-
-## Features
-
-| Feature | Implementation Details |
-|---------|----------------------|
-| **Real-time tracking** | Uses Intersection Observer + WebSockets |
-| **Accurate reading** | 2-second visibility threshold |
-| **Persistent storage** | Shared database with Mattermost |
-| **Resilient** | Handles deleted posts gracefully |
-| **Two-level tracking** | Per-post and per-channel status |
-| **Modern UI** | WhatsApp-style inline badges |
-| **Admin tools** | Debug endpoints and structured logs |
-| **Maintenance** | Automatic database cleanup |
-
----
-
-## Compatibility
-| Component | Tested version(s) |
-|-----------|------------------|
-| Mattermost Server | **≥ v6.0** (Team or Enterprise) |
-| PostgreSQL        | 13.x |
-| MySQL / MariaDB   | 8.0 / 10.6 |
-
-> ⚠️ **No fallback DSN.**  
-> The plugin **re-uses** the connection string configured under  
-> *System Console → Environment → Database*.  
-> If that field is still masked (`***********`) the plugin cannot connect and will refuse to start.
->
-> 📝 **MySQL Configuration Note:**  
-> If your MySQL DSN includes `?multiStatements=true`, this option is only required 
-> for legacy multi-statement cleanup operations. With the current implementation, 
-> this option can be safely removed from your DSN.
-
----
-
-## Quick installation
-
-1. **Download** the latest release (`mattermost-readreceipts-<date>.tar.gz`).  
-2. **System Console → Plugins → Plugin Management**  
-   * Upload → Enable.  
-3. Done – receipts appear next to new messages.
-
----
-
-## Building from source
-
-```bash
-git clone https://github.com/<you>/mattermost-readreceipts.git
-cd mattermost-readreceipts
-
-# build webapp + server + bundle
-make dist            # → dist/<timestamp>.tar.gz
-````
-
-Upload the generated archive via System Console as usual.
-
-### Development docker-compose (optional)
-
-```bash
-docker-compose up -d          # starts Mattermost + Postgres
-export MM_SQLSETTINGS_DATASOURCE="postgres://mmuser:mostest@db:5432/mattermost?sslmode=disable"
-make dev                       # live-reload plugin inside the container
+```javascript
+window.__DEBUG_RR__ = { verbose: true };
 ```
 
 ---
 
-## Configuration options (System Console → Plugins → Read Receipts)
+## 📡 API Reference
 
-| Key                           | Default | Description                                                |
-| ----------------------------- | ------- | ---------------------------------------------------------- |
-| **Enable Read Receipts**      | `true`  | Master switch                                              |
-| **Visibility Threshold (ms)** | `2000`  | How long a post must be on-screen before it is marked read |
-| **Receipt Retention (days)**  | `30`    | Older rows are purged nightly                              |
-| **Log Level**                 | `info`  | `debug` for verbose output                                 |
+### REST Endpoints
 
----
-
-## Troubleshooting
-
-| Symptom                                          | Likely cause / fix                                                                                                    |
-| ------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------- |
-| **`missing "=" after "********"` on activation** | The DB DSN is still masked. Paste the real DSN and click **Save** in System Console.                                  |
-| Receipts never appear                            | Make sure both users run ≥ Mattermost v6 and have the plugin enabled. Check the browser console for WebSocket events. |
-| Rows accumulate forever                          | Set **Retention (days)** to a non-zero value.                                                                         |
-| Some read receipts not showing                   | If post is deleted, plugin falls back to showing channel-level read status                                            |
-
-## API Endpoints
-
-### Debug Endpoints (System Admin only)
-* `GET …/plugins/mattermost-readreceipts/api/v1/debug/ping`
-* `GET …/plugins/mattermost-readreceipts/api/v1/debug/db`
-
-### Read Status Endpoints
-
-* `GET …/plugins/mattermost-readreceipts/api/v1/receipts?channel_id={channelID}&since={timestamp}` - Get per-post read statuses for a channel. `since` (milliseconds) filter is required; use `0` to fetch all.
-* `GET …/plugins/mattermost-readreceipts/api/v1/channel/{channelID}/readers` - Get channel-level read status (all users with any read receipt).
-* `GET …/plugins/mattermost-readreceipts/api/v1/read/channel/{channelID}?since={timestamp}` - Get readers in a channel since a specific time (ms) or use `postID` parameter to base on a post’s timestamp.
-* `POST …/plugins/mattermost-readreceipts/api/v1/read` - Mark a post as read; body must include `message_id` and optional `channel_id` (will auto-detect if omitted).
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `POST` | `/plugins/mattermost-readreceipts/api/v1/read` | Mark a message as read |
+| `GET` | `/plugins/mattermost-readreceipts/api/v1/receipts?channel_id=...` | Get receipts for channel |
+| `GET` | `/plugins/mattermost-readreceipts/api/v1/channel/{id}/reads` | Get channel-level reads |
+| `GET` | `/plugins/mattermost-readreceipts/api/v1/debug/ping` | Health check (admin only) |
+| `GET` | `/plugins/mattermost-readreceipts/api/v1/debug/db` | Database status (admin only) |
 
 ### WebSocket Events
 
-* `custom_mattermost-readreceipts_read_receipt` - Emitted when a message is read. Payload: `{ message_id, user_id, channel_id, timestamp }`.
-* `custom_mattermost-readreceipts_channel_readers` - Emitted on channel-level updates. Payload: `{ channel_id, last_post_id, user_ids }`.
-
-All reader endpoints return a consistent JSON response with a `user_ids` array containing the IDs of users who have read the content.
+| Event | Payload | Description |
+|-------|---------|-------------|
+| `custom_mattermost-readreceipts_read_receipt` | `{ MessageID, UserID, ChannelID, ReaderIDs }` | Sent when message is read |
+| `custom_mattermost-readreceipts_channel_readers` | `{ ChannelID, LastPostID, UserIDs }` | Channel-level update |
 
 ---
 
-## Database Schema
+## 🗄️ Database Schema
 
-The plugin automatically creates and maintains the following tables on first run:
+The plugin automatically creates these tables:
 
-### channel_reads
-
-Persists channel-level "Seen by ..." information, mapping users to their last seen message in each channel.
+### PluginReadReceipts
+Per-message read tracking.
 
 | Column | Type | Description |
 |--------|------|-------------|
-| channel_id | TEXT/VARCHAR | Mattermost channel identifier (part of PK) |
-| user_id | TEXT/VARCHAR | User who has read messages (part of PK) |
-| last_post_id | TEXT/VARCHAR | ID of the last post seen by this user |
-| last_seen_at | BIGINT | Timestamp (milliseconds) when the user last saw this post |
+| message_id | TEXT | Post ID (PK) |
+| user_id | TEXT | Reader's user ID (PK) |
+| channel_id | TEXT | Channel ID |
+| timestamp | BIGINT | When read (milliseconds) |
 
-Primary key: (channel_id, user_id)
+### channel_reads
+Channel-level read status.
 
-Indexes:
-
-* idx_channel_reads_channel_id
-* idx_channel_reads_user_id
-
-This table powers the real-time "Seen by ..." indicators in the UI and ensures they persist across server restarts. The plugin automatically creates and populates this table on first activation.
-
----
-
-## Contributing
-
-1. Fork, branch from **main**.
-2. `make dev-setup` → `make test` → commit.
-3. Open a pull-request – please include unit tests and README updates where relevant.
+| Column | Type | Description |
+|--------|------|-------------|
+| channel_id | TEXT | Channel ID (PK) |
+| user_id | TEXT | User ID (PK) |
+| last_post_id | TEXT | Last seen post ID |
+| last_seen_at | BIGINT | Timestamp (milliseconds) |
 
 ---
 
-## License
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create a feature branch from `main`
+3. Make your changes with tests
+4. Submit a pull request
+
+---
+
+## 📄 License
 
 [MIT](LICENSE)
 
 ---
 
-### Acknowledgements
+## 🙏 Acknowledgements
 
-* Mattermost team for the plugin framework
-* All contributors – PRs welcome!
-
+- Mattermost team for the plugin framework
+- All contributors and testers

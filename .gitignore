@@ -20,30 +20,17 @@
 
 webapp/node_modules
 
-*.zip
+
 
 mattermost/*
 /dist/*
 /server/dist/*
-git-diff-server.txt
-git-diff-web.txt
+
 *.txt
 *.sh
-*.md 
 *.html
-plugin-status-check.js
-browser-test-monitor.js
-TEST_RESULTS.md
-TESTING_GUIDE.md
-diagnostic-test.js
-dm-diagnostic.js
-dm-complete-fix.js
-comprehensive-dm-test.js
-dm-threshold-test.js
-step-by-step-dm-test.js
-simple-dm-test.js
-*.py
-*.js
+
 /old-plan/*
 /plan/*
 /log-test/*
+/log/*
