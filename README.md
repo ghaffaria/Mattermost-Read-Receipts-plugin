@@ -2,13 +2,13 @@
 
 [فارسی](README.fa.md) · [Releases](https://github.com/ghaffaria/Mattermost-Read-Receipts-plugin/releases) · [Architecture](docs/ARCHITECTURE.md) · [Validation](docs/VALIDATION.md)
 
-Plugin **1.1.1** and derived Android client **2.46.0-rr.1** provide automatic, explicit per-message receipts. A message must remain visible in the focused, active conversation for **2 continuous seconds** by default. Authors see **✓✓ Seen by …** with server-confirmed readers. Receiving a message or advancing a channel read cursor does not create a receipt.
+Plugin **1.1.2** and derived Android client **2.46.0-rr.1** provide automatic, explicit per-message receipts. A message must remain visible in the focused, active conversation for **2 continuous seconds** by default. Authors see **✓✓ Seen by …** with server-confirmed readers. Receiving a message or advancing a channel read cursor does not create a receipt.
 
 ## Download
 
-Use the **v1.1.1-android-2.46.0-rr.1** release:
+Use [plugin v1.1.2](https://github.com/ghaffaria/Mattermost-Read-Receipts-plugin/releases/tag/v1.1.2). The unchanged APK remains in the [Android release](https://github.com/ghaffaria/Mattermost-Read-Receipts-plugin/releases/tag/v1.1.1-android-2.46.0-rr.1):
 
-- `mattermost-readreceipts-1.1.1.tar.gz`: Linux amd64/arm64 plugin.
+- `mattermost-readreceipts-1.1.2.tar.gz`: Linux amd64/arm64 plugin.
 - `mattermost-read-receipts-android-2.46.0-rr.1-arm64-v8a.apk`: separately signed Android QA app.
 - `SHA256SUMS`: verify downloads before installation.
 
@@ -43,3 +43,7 @@ The screenshots contain synthetic accounts in an isolated local test environment
 ## Repository replacement
 
 The previous working tree was replaced with the current implementation on2026-11-21. Earlier commits and the previous release remain recoverable in Git history. The server plugin and APK are the exact tested artifacts; checksums identify their bytes. The Android source is supplied as a verified patch against the pinned official upstream, with a preparation script. Upstream mobile licensing is available in the [official repository](https://github.com/mattermost/mattermost-mobile/tree/v2.46.0).
+
+## License
+
+Original project code: [MPL-2.0](LICENSE). See [scope and third-party boundaries](LICENSING.md). Plugin 1.1.2 adds developer credit in the plugin description and a clickable settings footer. APK bytes and Android licensing remain unchanged. Historical UI validation used plugin 1.1.1; 1.1.2 changes licensing/attribution and the activation version log only.

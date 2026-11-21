@@ -1,3 +1,6 @@
+// Copyright 2026 Alireza Ghaffari
+// SPDX-License-Identifier: MPL-2.0
+
 import {VisibilityClock, mergeReaders, hasReadAttention} from './visibility';
 import {PostViewport, postIdFromElement} from './post_view';
 

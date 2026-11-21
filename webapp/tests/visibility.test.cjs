@@ -1,3 +1,6 @@
+// Copyright 2026 Alireza Ghaffari
+// SPDX-License-Identifier: MPL-2.0
+
 const {test} = require('node:test');
 const assert = require('node:assert/strict');
 const ts = require('typescript');

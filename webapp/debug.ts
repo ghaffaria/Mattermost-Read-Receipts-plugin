@@ -1,3 +1,6 @@
+// Copyright 2026 Alireza Ghaffari
+// SPDX-License-Identifier: MPL-2.0
+
 // Debug utility for Read Receipts plugin
 // Enable debug logging by running in browser console:
 //   window.__DEBUG_RR__ = { verbose: true }

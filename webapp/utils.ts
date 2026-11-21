@@ -1,3 +1,6 @@
+// Copyright 2026 Alireza Ghaffari
+// SPDX-License-Identifier: MPL-2.0
+
 export const getUserId = (): string => {
     return document.cookie.match(/MMUSERID=([^;]+)/)?.[1] || window.localStorage.getItem('MMUSERID') || '';
 };

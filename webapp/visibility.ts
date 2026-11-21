@@ -1,3 +1,6 @@
+// Copyright 2026 Alireza Ghaffari
+// SPDX-License-Identifier: MPL-2.0
+
 // Visibility alone can remain true in an unfocused/minimized desktop webview.
 export function hasReadAttention(doc: Pick<Document, 'visibilityState' | 'hasFocus'>): boolean {
     return doc.visibilityState === 'visible' && doc.hasFocus();

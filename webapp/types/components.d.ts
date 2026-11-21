@@ -1,3 +1,6 @@
+// Copyright 2026 Alireza Ghaffari
+// SPDX-License-Identifier: MPL-2.0
+
 // webapp/types/components.d.ts
 
 export interface VisibilityTrackerProps {

@@ -1,3 +1,6 @@
+// Copyright 2026 Alireza Ghaffari
+// SPDX-License-Identifier: MPL-2.0
+
 // State management for read receipts
 import { Dispatch } from 'redux';
 import { loadInitialReceipts, loadChannelReads } from '../store';

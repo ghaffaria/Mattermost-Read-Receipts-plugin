@@ -1,3 +1,6 @@
+// Copyright 2026 Alireza Ghaffari
+// SPDX-License-Identifier: MPL-2.0
+
 // Get the current user's ID from cookie or localStorage
 export const getUserId = (): string => {
     const cookieUserId = document.cookie.match(/MMUSERID=([^;]+)/)?.[1];

@@ -1,3 +1,6 @@
+// Copyright 2026 Alireza Ghaffari
+// SPDX-License-Identifier: MPL-2.0
+
 import { configureStore } from '@reduxjs/toolkit';
 import channelReadersReducer, { selectReaders, addReader, setReaders } from './channelReaders';
 import type { RootState } from './types';

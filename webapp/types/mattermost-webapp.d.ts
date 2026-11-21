@@ -1,3 +1,6 @@
+// Copyright 2026 Alireza Ghaffari
+// SPDX-License-Identifier: MPL-2.0
+
 // webapp/types/mattermost-webapp.d.ts
 
 declare module 'mattermost-webapp/plugins/registry' {

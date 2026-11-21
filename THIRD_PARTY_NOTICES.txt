@@ -1,0 +1,188 @@
+Third-party notices for Mattermost Read Receipts
+
+Project code is MPL-2.0. Dependencies retain their original licenses.
+Mattermost SDK model/ and plugin/ are Apache-2.0 under its preserved licensing policy.
+License texts below are copied without alteration from the pinned local dependencies.
+
+github.com/blang/semver v3.5.1+incompatible
+  licenses/_third_party/github.com/blang/semver@v3.5.1+incompatible/LICENSE
+
+github.com/davecgh/go-spew v1.1.1
+  licenses/_third_party/github.com/davecgh/go-spew@v1.1.1/LICENSE
+
+github.com/dyatlov/go-opengraph v0.0.0-20210112100619-dae8665a5b09
+  licenses/_third_party/github.com/dyatlov/go-opengraph@v0.0.0-20210112100619-dae8665a5b09/LICENSE
+
+github.com/fatih/color v1.13.0
+  licenses/_third_party/github.com/fatih/color@v1.13.0/LICENSE.md
+
+github.com/francoispqt/gojay v1.2.13
+  licenses/_third_party/github.com/francoispqt/gojay@v1.2.13/LICENSE
+
+github.com/go-asn1-ber/asn1-ber v1.5.3
+  licenses/_third_party/github.com/go-asn1-ber/asn1-ber@v1.5.3/LICENSE
+
+github.com/go-sql-driver/mysql v1.6.0
+  licenses/_third_party/github.com/go-sql-driver/mysql@v1.6.0/LICENSE
+
+github.com/golang/protobuf v1.5.2
+  licenses/_third_party/github.com/golang/protobuf@v1.5.2/LICENSE
+
+github.com/google/uuid v1.3.0
+  licenses/_third_party/github.com/google/uuid@v1.3.0/LICENSE
+
+github.com/gorilla/mux v1.8.1
+  licenses/_third_party/github.com/gorilla/mux@v1.8.1/LICENSE
+
+github.com/gorilla/websocket v1.5.3
+  licenses/_third_party/github.com/gorilla/websocket@v1.5.3/LICENSE
+
+github.com/graph-gophers/graphql-go v1.3.0
+  licenses/_third_party/github.com/graph-gophers/graphql-go@v1.3.0/LICENSE
+
+github.com/hashicorp/go-hclog v1.2.0
+  licenses/_third_party/github.com/hashicorp/go-hclog@v1.2.0/LICENSE
+
+github.com/hashicorp/go-plugin v1.4.3
+  licenses/_third_party/github.com/hashicorp/go-plugin@v1.4.3/LICENSE
+
+github.com/hashicorp/yamux v0.0.0-20211028200310-0bc27b27de87
+  licenses/_third_party/github.com/hashicorp/yamux@v0.0.0-20211028200310-0bc27b27de87/LICENSE
+
+github.com/json-iterator/go v1.1.12
+  licenses/_third_party/github.com/json-iterator/go@v1.1.12/LICENSE
+
+github.com/klauspost/compress v1.15.1
+  licenses/_third_party/github.com/klauspost/compress@v1.15.1/LICENSE
+
+github.com/klauspost/cpuid/v2 v2.0.12
+  licenses/_third_party/github.com/klauspost/cpuid/v2@v2.0.12/LICENSE
+
+github.com/lib/pq v1.10.4
+  licenses/_third_party/github.com/lib/pq@v1.10.4/LICENSE.md, licenses/_third_party/github.com/lib/pq@v1.10.4/notice.go, licenses/_third_party/github.com/lib/pq@v1.10.4/notice_example_test.go, licenses/_third_party/github.com/lib/pq@v1.10.4/notice_test.go
+
+github.com/mattermost/go-i18n v1.11.1-0.20211013152124-5c415071e404
+  licenses/_third_party/github.com/mattermost/go-i18n@v1.11.1-0.20211013152124-5c415071e404/LICENSE
+
+github.com/mattermost/ldap v0.0.0-20201202150706-ee0e6284187d
+  licenses/_third_party/github.com/mattermost/ldap@v0.0.0-20201202150706-ee0e6284187d/LICENSE
+
+github.com/mattermost/logr/v2 v2.0.15
+  licenses/_third_party/github.com/mattermost/logr/v2@v2.0.15/LICENSE
+
+github.com/mattermost/mattermost-server/v6 v6.7.2
+  licenses/_third_party/github.com/mattermost/mattermost-server/v6@v6.7.2/LICENSE.txt, licenses/_third_party/github.com/mattermost/mattermost-server/v6@v6.7.2/NOTICE.txt
+
+github.com/mattn/go-colorable v0.1.12
+  licenses/_third_party/github.com/mattn/go-colorable@v0.1.12/LICENSE
+
+github.com/mattn/go-isatty v0.0.14
+  licenses/_third_party/github.com/mattn/go-isatty@v0.0.14/LICENSE
+
+github.com/minio/md5-simd v1.1.2
+  licenses/_third_party/github.com/minio/md5-simd@v1.1.2/LICENSE, licenses/_third_party/github.com/minio/md5-simd@v1.1.2/LICENSE.Golang
+
+github.com/minio/minio-go/v7 v7.0.24
+  licenses/_third_party/github.com/minio/minio-go/v7@v7.0.24/LICENSE, licenses/_third_party/github.com/minio/minio-go/v7@v7.0.24/NOTICE
+
+github.com/minio/sha256-simd v1.0.0
+  licenses/_third_party/github.com/minio/sha256-simd@v1.0.0/LICENSE
+
+github.com/mitchellh/go-homedir v1.1.0
+  licenses/_third_party/github.com/mitchellh/go-homedir@v1.1.0/LICENSE
+
+github.com/mitchellh/go-testing-interface v1.14.1
+  licenses/_third_party/github.com/mitchellh/go-testing-interface@v1.14.1/LICENSE
+
+github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd
+  licenses/_third_party/github.com/modern-go/concurrent@v0.0.0-20180306012644-bacd9c7ef1dd/LICENSE
+
+github.com/modern-go/reflect2 v1.0.2
+  licenses/_third_party/github.com/modern-go/reflect2@v1.0.2/LICENSE
+
+github.com/oklog/run v1.1.0
+  licenses/_third_party/github.com/oklog/run@v1.1.0/LICENSE
+
+github.com/opentracing/opentracing-go v1.2.0
+  licenses/_third_party/github.com/opentracing/opentracing-go@v1.2.0/LICENSE
+
+github.com/pborman/uuid v1.2.1
+  licenses/_third_party/github.com/pborman/uuid@v1.2.1/LICENSE
+
+github.com/pelletier/go-toml v1.9.4
+  licenses/_third_party/github.com/pelletier/go-toml@v1.9.4/LICENSE
+
+github.com/philhofer/fwd v1.1.1
+  licenses/_third_party/github.com/philhofer/fwd@v1.1.1/LICENSE.md
+
+github.com/pkg/errors v0.9.1
+  licenses/_third_party/github.com/pkg/errors@v0.9.1/LICENSE
+
+github.com/pmezard/go-difflib v1.0.0
+  licenses/_third_party/github.com/pmezard/go-difflib@v1.0.0/LICENSE
+
+github.com/rs/xid v1.4.0
+  licenses/_third_party/github.com/rs/xid@v1.4.0/LICENSE
+
+github.com/stretchr/testify v1.7.1
+  licenses/_third_party/github.com/stretchr/testify@v1.7.1/LICENSE
+
+github.com/tinylib/msgp v1.1.6
+  licenses/_third_party/github.com/tinylib/msgp@v1.1.6/LICENSE
+
+github.com/vmihailenco/msgpack/v5 v5.3.5
+  licenses/_third_party/github.com/vmihailenco/msgpack/v5@v5.3.5/LICENSE
+
+github.com/vmihailenco/tagparser/v2 v2.0.0
+  licenses/_third_party/github.com/vmihailenco/tagparser/v2@v2.0.0/LICENSE
+
+github.com/wiggin77/merror v1.0.3
+  licenses/_third_party/github.com/wiggin77/merror@v1.0.3/LICENSE
+
+github.com/wiggin77/srslog v1.0.1
+  licenses/_third_party/github.com/wiggin77/srslog@v1.0.1/LICENSE
+
+github.com/yuin/goldmark v1.4.11
+  licenses/_third_party/github.com/yuin/goldmark@v1.4.11/LICENSE
+
+golang.org/x/crypto v0.0.0-20220331220935-ae2d96664a29
+  licenses/_third_party/golang.org/x/crypto@v0.0.0-20220331220935-ae2d96664a29/LICENSE
+
+golang.org/x/net v0.0.0-20220403103023-749bd193bc2b
+  licenses/_third_party/golang.org/x/net@v0.0.0-20220403103023-749bd193bc2b/LICENSE
+
+golang.org/x/sys v0.0.0-20220403205710-6acee93ad0eb
+  licenses/_third_party/golang.org/x/sys@v0.0.0-20220403205710-6acee93ad0eb/LICENSE
+
+golang.org/x/text v0.3.7
+  licenses/_third_party/golang.org/x/text@v0.3.7/LICENSE
+
+google.golang.org/genproto v0.0.0-20220401170504-314d38edb7de
+  licenses/_third_party/google.golang.org/genproto@v0.0.0-20220401170504-314d38edb7de/LICENSE
+
+google.golang.org/grpc v1.45.0
+  licenses/_third_party/google.golang.org/grpc@v1.45.0/LICENSE, licenses/_third_party/google.golang.org/grpc@v1.45.0/NOTICE.txt
+
+google.golang.org/protobuf v1.28.0
+  licenses/_third_party/google.golang.org/protobuf@v1.28.0/LICENSE
+
+gopkg.in/ini.v1 v1.66.4
+  licenses/_third_party/gopkg.in/ini.v1@v1.66.4/LICENSE
+
+gopkg.in/natefinch/lumberjack.v2 v2.0.0
+  licenses/_third_party/gopkg.in/natefinch/lumberjack.v2@v2.0.0/LICENSE
+
+gopkg.in/yaml.v2 v2.4.0
+  licenses/_third_party/gopkg.in/yaml.v2@v2.4.0/LICENSE, licenses/_third_party/gopkg.in/yaml.v2@v2.4.0/LICENSE.libyaml, licenses/_third_party/gopkg.in/yaml.v2@v2.4.0/NOTICE
+
+gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b
+  licenses/_third_party/gopkg.in/yaml.v3@v3.0.0-20210107192922-496545a6307b/LICENSE, licenses/_third_party/gopkg.in/yaml.v3@v3.0.0-20210107192922-496545a6307b/NOTICE
+
+Go standard library
+  licenses/_third_party/go-standard-library/LICENSE
+
+Frontend build/runtime tooling: webpack
+  licenses/_third_party/frontend-tooling/webpack/LICENSE
+
+Frontend build/runtime tooling: typescript
+  licenses/_third_party/frontend-tooling/typescript/LICENSE.txt

@@ -1,0 +1,18 @@
+# Licensing / مجوز
+
+Original project source in `server/`, `webapp/`, `build/` and the project-owned Android preparation script is licensed under **Mozilla Public License 2.0 (MPL-2.0)**. SPDX headers identify covered source files. See [LICENSE](LICENSE). Project-owned manifests, build configuration and documentation are also covered by MPL-2.0 unless an explicit different notice applies. Copyright 2026 Alireza Ghaffari.
+
+این مجوز برای کد و مستندات متعلق به این پروژه است؛ نام و حقوق مؤلف کدهای شخص ثالث را تغییر نمی‌دهد. اعتبار توسعه‌دهنده و لینک فقط در رابط تنظیمات/مشخصات پلاگین اضافه شده و APK تغییر نکرده است.
+
+## Third-party boundaries
+
+- Mattermost server/mobile and other dependencies retain their original licenses and notices. Root MPL licensing does not relicense them.
+- `mobile/android/read-receipts-2.46.0-rr.1.patch` is a mixed-origin patch against the official pinned Mattermost Mobile source. It contains upstream context and modifications. It is excluded from the blanket MPL grant; applicable upstream file licenses remain in force. The existing Android APK is not relicensed or rebuilt by this release. See the [pinned upstream licensing](https://github.com/mattermost/mattermost-mobile/tree/v2.46.0).
+- Bundled Go dependencies are listed in [THIRD_PARTY_NOTICES.txt](THIRD_PARTY_NOTICES.txt); original license/notice texts are included under `licenses/`. Mattermost v6.7.2 explicitly licenses its `model/` and `plugin/` SDK directories under Apache-2.0; the plugin imports those SDK paths. The dependency's complete licensing policy is preserved.
+- Go's standard library retains the Go Authors' BSD license. Frontend runtime uses project code and Webpack's generated loader; build tools retain their own licenses and are not relicensed by the project.
+
+## Corresponding source and private access
+
+See [SOURCE_CODE.txt](SOURCE_CODE.txt) for the versioned source location. Keeping the repository private does not remove obligations to give binary recipients access to the corresponding covered source. Give recipients access or provide a source archive. No requirement to make this repository public is introduced by this update.
+
+خصوصی‌بودن ریپو حفظ شده است. هنگام تحویل فایل اجرایی به دیگران، دسترسی همان دریافت‌کنندگان به سورس متناظر باید مطابق MPL فراهم شود؛ عمومی‌کردن ریپو شرط این مرحله نیست.

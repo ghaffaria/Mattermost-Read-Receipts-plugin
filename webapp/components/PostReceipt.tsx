@@ -1,3 +1,6 @@
+// Copyright 2026 Alireza Ghaffari
+// SPDX-License-Identifier: MPL-2.0
+
 // webapp/components/PostReceipt.tsx
 import React, { FC, ReactElement, useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';

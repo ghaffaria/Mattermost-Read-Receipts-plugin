@@ -1,3 +1,6 @@
+// Copyright 2026 Alireza Ghaffari
+// SPDX-License-Identifier: MPL-2.0
+
 import { Store } from 'redux';
 import { configureStore, EnhancedStore } from '@reduxjs/toolkit';
 import { setMattermostStore as setLegacyMattermostStore } from './legacyStore';

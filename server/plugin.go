@@ -1,3 +1,6 @@
+// Copyright 2026 Alireza Ghaffari
+// SPDX-License-Identifier: MPL-2.0
+
 package main
 
 import (
@@ -111,7 +114,7 @@ func (p *Plugin) OnActivate() error {
 	p.stopCh = make(chan struct{})
 	p.workers.Add(1)
 	go p.runMaintenance(p.stopCh, db)
-	p.API.LogInfo("Read Receipts activated", "version", "1.1.1")
+	p.API.LogInfo("Read Receipts activated", "version", "1.1.2")
 	return nil
 }
 

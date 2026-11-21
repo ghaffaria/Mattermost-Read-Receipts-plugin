@@ -1,3 +1,6 @@
+// Copyright 2026 Alireza Ghaffari
+// SPDX-License-Identifier: MPL-2.0
+
 // webapp/components/ReadReceiptRootObserver.tsx
 import React, { useEffect } from 'react';
 import ReactDOM from 'react-dom';

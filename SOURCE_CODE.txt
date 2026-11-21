@@ -1,0 +1,14 @@
+Source code for the MPL-covered plugin, version 1.1.2:
+https://github.com/ghaffaria/Mattermost-Read-Receipts-plugin/tree/v1.1.2
+
+The corresponding source archive is also distributed with the release:
+mattermost-readreceipts-1.1.2-source.tar.gz
+https://github.com/ghaffaria/Mattermost-Read-Receipts-plugin/releases/tag/v1.1.2
+
+The repository and release are currently private; source is available to
+the same recipients who can download the plugin binary. When redistributing,
+provide this source archive or equivalent source access to your recipients
+as required by MPL 2.0 section 3.2.
+
+Developed by Alireza Ghaffari
+https://github.com/ghaffaria

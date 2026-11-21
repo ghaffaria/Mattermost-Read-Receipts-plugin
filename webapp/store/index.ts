@@ -1,3 +1,6 @@
+// Copyright 2026 Alireza Ghaffari
+// SPDX-License-Identifier: MPL-2.0
+
 import { configureStore, combineReducers, ThunkDispatch, AnyAction } from '@reduxjs/toolkit';
 import channelReadersReducer from './channelReaders';
 // import { loadChannelReads } from '../store'; // fallback to original, since not exported from channelReaders

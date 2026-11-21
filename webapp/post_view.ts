@@ -1,3 +1,6 @@
+// Copyright 2026 Alireza Ghaffari
+// SPDX-License-Identifier: MPL-2.0
+
 // Ordinary channel posts and both thread layouts use different container IDs.
 // Always resolve the resulting ID through Mattermost's post store.
 export function postIdFromElement(id: string): string | undefined {

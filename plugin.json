@@ -2,8 +2,8 @@
   "manifest_version": 2,
   "id": "mattermost-readreceipts",
   "name": "Read Receipts",
-  "description": "Explicit per-message read receipts with continuous visibility tracking.",
-  "version": "1.1.1",
+  "description": "Explicit per-message read receipts with continuous visibility tracking. Developed by Alireza Ghaffari.",
+  "version": "1.1.2",
   "min_server_version": "9.5.0",
   "server": {
     "executables": {
@@ -65,6 +65,8 @@
           }
         ]
       }
-    ]
-  }
+    ],
+    "footer": "Developed by [Alireza Ghaffari](https://github.com/ghaffaria)."
+  },
+  "homepage_url": "https://github.com/ghaffaria"
 }

@@ -1,3 +1,6 @@
+// Copyright 2026 Alireza Ghaffari
+// SPDX-License-Identifier: MPL-2.0
+
 // Legacy store implementation maintained for backwards compatibility
 import { Store } from 'redux';
 import { store } from './index';

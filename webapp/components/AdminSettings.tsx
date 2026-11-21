@@ -1,3 +1,6 @@
+// Copyright 2026 Alireza Ghaffari
+// SPDX-License-Identifier: MPL-2.0
+
 // webapp/components/AdminSettings.tsx
 import React, { FC, ChangeEvent, ReactElement, useEffect, useState } from 'react';
 

@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+# Copyright 2026 Alireza Ghaffari
+# SPDX-License-Identifier: MPL-2.0
+
 """Prepare a pinned upstream checkout and apply the maintained Android patch."""
 import argparse
 import hashlib

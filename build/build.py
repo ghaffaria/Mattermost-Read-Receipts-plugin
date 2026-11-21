@@ -1,3 +1,6 @@
+# Copyright 2026 Alireza Ghaffari
+# SPDX-License-Identifier: MPL-2.0
+
 """Build the plugin without relying on the macOS Xcode-provided make."""
 from pathlib import Path
 import os

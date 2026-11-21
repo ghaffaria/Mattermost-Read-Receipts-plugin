@@ -1,3 +1,6 @@
+// Copyright 2026 Alireza Ghaffari
+// SPDX-License-Identifier: MPL-2.0
+
 // webapp/components/VisibilityTracker.tsx
 import React, { FC, ReactElement, useEffect, useRef, useState } from 'react';
 import debounce from 'lodash.debounce';

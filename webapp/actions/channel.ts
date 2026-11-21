@@ -1,3 +1,6 @@
+// Copyright 2026 Alireza Ghaffari
+// SPDX-License-Identifier: MPL-2.0
+
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import { setReaders, setChannelLastSeen } from '../store/channelReaders';
 
