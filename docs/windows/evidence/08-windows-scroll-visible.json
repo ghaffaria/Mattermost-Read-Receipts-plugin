@@ -1,0 +1,17 @@
+{
+  "scenario": "WIN-SCROLL-03 scroll down and visible",
+  "at_utc": "2026-11-21T13:51:40.231631+00:00",
+  "post_id": "eufabzcpzfy3bpqd8z88fzjxny",
+  "windows_state_source": "User reports scrolled down, entire target visible for more than five seconds",
+  "receipts": [
+    {
+      "MessageID": "eufabzcpzfy3bpqd8z88fzjxny",
+      "UserID": "fbdn3hjhypntmxzg3haryeswsc",
+      "ChannelID": "ieidiqhpj3rdx8334nqerkrdiy",
+      "Timestamp": 1795269063578
+    }
+  ],
+  "windows_seen": true,
+  "only_windows_reader": true,
+  "receipt_after_last_scrolled_up_sample": true
+}

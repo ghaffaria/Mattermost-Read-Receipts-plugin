@@ -1,0 +1,40 @@
+{
+  "scenario": "WIN-WEB-01 unopened public channel",
+  "post_id": "bammio9qqby63q68n4g9nk5tcy",
+  "channel_id": "ieidiqhpj3rdx8334nqerkrdiy",
+  "windows_state": "User reports Windows QA navigation open; public channel not opened",
+  "windows_user_id": "fbdn3hjhypntmxzg3haryeswsc",
+  "samples": [
+    {
+      "at_utc": "2026-11-21T13:30:35.560678+00:00",
+      "post_age_ms": 25297,
+      "receipts": []
+    },
+    {
+      "at_utc": "2026-11-21T13:30:37.573858+00:00",
+      "post_age_ms": 27309,
+      "receipts": []
+    },
+    {
+      "at_utc": "2026-11-21T13:30:39.593640+00:00",
+      "post_age_ms": 29329,
+      "receipts": []
+    },
+    {
+      "at_utc": "2026-11-21T13:30:41.601727+00:00",
+      "post_age_ms": 31337,
+      "receipts": []
+    },
+    {
+      "at_utc": "2026-11-21T13:30:43.609208+00:00",
+      "post_age_ms": 33345,
+      "receipts": []
+    },
+    {
+      "at_utc": "2026-11-21T13:30:45.620091+00:00",
+      "post_age_ms": 35356,
+      "receipts": []
+    }
+  ],
+  "no_windows_seen": true
+}

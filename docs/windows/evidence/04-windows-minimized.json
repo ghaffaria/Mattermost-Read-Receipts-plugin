@@ -1,0 +1,48 @@
+{
+  "scenario": "WIN-MIN-02 minimized Windows receiver",
+  "post_id": "8pcnmfbupbg63m5s4fzawids9h",
+  "windows_state_source": "user reports Mattermost minimized inside Windows; UTM not controlled during observation",
+  "samples": [
+    {
+      "at_utc": "2026-11-21T13:40:20.914175+00:00",
+      "post_age_ms": 28920,
+      "receipts": []
+    },
+    {
+      "at_utc": "2026-11-21T13:40:22.933439+00:00",
+      "post_age_ms": 30938,
+      "receipts": []
+    },
+    {
+      "at_utc": "2026-11-21T13:40:24.954920+00:00",
+      "post_age_ms": 32959,
+      "receipts": []
+    },
+    {
+      "at_utc": "2026-11-21T13:40:26.964530+00:00",
+      "post_age_ms": 34969,
+      "receipts": []
+    },
+    {
+      "at_utc": "2026-11-21T13:40:28.972839+00:00",
+      "post_age_ms": 36977,
+      "receipts": []
+    },
+    {
+      "at_utc": "2026-11-21T13:40:30.981682+00:00",
+      "post_age_ms": 38986,
+      "receipts": []
+    },
+    {
+      "at_utc": "2026-11-21T13:40:32.994086+00:00",
+      "post_age_ms": 40999,
+      "receipts": []
+    },
+    {
+      "at_utc": "2026-11-21T13:40:35.011264+00:00",
+      "post_age_ms": 43016,
+      "receipts": []
+    }
+  ],
+  "no_windows_seen": true
+}

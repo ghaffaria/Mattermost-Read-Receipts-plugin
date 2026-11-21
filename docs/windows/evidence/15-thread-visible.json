@@ -1,0 +1,18 @@
+{
+  "scenario": "WIN-THREAD-06 thread opened and reply visible",
+  "at_utc": "2026-11-21T14:58:34.032179+00:00",
+  "post_id": "wzn4mb7mc7d99cg4puz9hxbjwh",
+  "root_id": "ogzo46uywf83pcjms4anceiuxo",
+  "windows_state_source": "User reports thread reply viewed and Seen rendered in web",
+  "receipts": [
+    {
+      "MessageID": "wzn4mb7mc7d99cg4puz9hxbjwh",
+      "UserID": "fbdn3hjhypntmxzg3haryeswsc",
+      "ChannelID": "1hqehpmdkjbcxrr1h41oostwdw",
+      "Timestamp": 1795273067393
+    }
+  ],
+  "windows_seen": true,
+  "only_windows_reader": true,
+  "receipt_after_last_thread_closed_sample": true
+}

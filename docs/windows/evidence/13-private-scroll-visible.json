@@ -1,0 +1,17 @@
+{
+  "scenario": "WIN-PRIVATE-SCROLL-05 scrolled down and visible",
+  "at_utc": "2026-11-21T14:52:04.505984+00:00",
+  "post_id": "ogzo46uywf83pcjms4anceiuxo",
+  "windows_state_source": "User reports private scroll target seen and Seen shown in web",
+  "receipts": [
+    {
+      "MessageID": "ogzo46uywf83pcjms4anceiuxo",
+      "UserID": "fbdn3hjhypntmxzg3haryeswsc",
+      "ChannelID": "1hqehpmdkjbcxrr1h41oostwdw",
+      "Timestamp": 1795272672785
+    }
+  ],
+  "windows_seen": true,
+  "only_windows_reader": true,
+  "receipt_after_last_scrolled_up_sample": true
+}

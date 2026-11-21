@@ -20,6 +20,10 @@ Plugin1.1.1 and Android2.46.0-rr.1(candidate4) were tested.32 target scenarios a
 | Restart | Session retained, one receipt row and original first timestamps preserved |
 | Private channel outsider | GET/POST403, no unauthorized write |
 
+## Windows desktop follow-up
+
+**PASS for the tested Windows ↔ web scenarios.** Public/private unopened messages, offscreen scroll, minimize/restore and closed/open thread responses were checked with paired negative/positive server evidence. Reverse-direction receipts and Windows rendering were also verified. These additional Windows tests are separate from the earlier 32 Android target scenarios. See [Windows validation](WINDOWS.md) for screenshots, evidence and operator-reported additional acceptance. Exact Windows/desktop version was not recorded.
+
 ## Automated and preservation checks
 
 - Jest154/154 in13 suites; actual SDK source/CJS/module61/61; native JVM8/8(5new,3existing).

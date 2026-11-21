@@ -1,0 +1,64 @@
+{
+  "scenario": "WIN-THREAD-06 parent visible but thread closed",
+  "post_id": "wzn4mb7mc7d99cg4puz9hxbjwh",
+  "root_id": "ogzo46uywf83pcjms4anceiuxo",
+  "channel_id": "1hqehpmdkjbcxrr1h41oostwdw",
+  "message": "WIN-THREAD-06 | پاسخ آزمایشی داخل ترد: دیدن پیام اصلی نباید این پاسخ بازنشده را Seen کند.",
+  "windows_state_source": "User confirms thread closed after instruction to keep parent visible in private channel",
+  "parent_receipts": [
+    {
+      "MessageID": "ogzo46uywf83pcjms4anceiuxo",
+      "UserID": "fbdn3hjhypntmxzg3haryeswsc",
+      "ChannelID": "1hqehpmdkjbcxrr1h41oostwdw",
+      "Timestamp": 1795272672785
+    }
+  ],
+  "samples": [
+    {
+      "at_utc": "2026-11-21T14:56:08.026163+00:00",
+      "post_age_ms": 29542,
+      "receipts": []
+    },
+    {
+      "at_utc": "2026-11-21T14:56:10.034406+00:00",
+      "post_age_ms": 31550,
+      "receipts": []
+    },
+    {
+      "at_utc": "2026-11-21T14:56:12.041589+00:00",
+      "post_age_ms": 33557,
+      "receipts": []
+    },
+    {
+      "at_utc": "2026-11-21T14:56:14.051790+00:00",
+      "post_age_ms": 35567,
+      "receipts": []
+    },
+    {
+      "at_utc": "2026-11-21T14:56:16.065081+00:00",
+      "post_age_ms": 37581,
+      "receipts": []
+    },
+    {
+      "at_utc": "2026-11-21T14:56:18.080786+00:00",
+      "post_age_ms": 39596,
+      "receipts": []
+    },
+    {
+      "at_utc": "2026-11-21T14:56:20.093917+00:00",
+      "post_age_ms": 41609,
+      "receipts": []
+    },
+    {
+      "at_utc": "2026-11-21T14:56:22.112696+00:00",
+      "post_age_ms": 43628,
+      "receipts": []
+    },
+    {
+      "at_utc": "2026-11-21T14:56:24.120173+00:00",
+      "post_age_ms": 45636,
+      "receipts": []
+    }
+  ],
+  "no_windows_seen": true
+}

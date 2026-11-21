@@ -1,0 +1,193 @@
+{
+  "at_utc": "2026-11-21T15:04:29.690212+00:00",
+  "channels": {
+    "public": [
+      {
+        "id": "8pcnmfbupbg63m5s4fzawids9h",
+        "message": "WIN-MIN-02 | تست دریافت پیام در حالت minimize ویندوز — تا بازشدن و مشاهده نباید Seen ثبت شود.",
+        "author_id": "gdm3i1zj1ibm3x5wwu1r6jx1te",
+        "root_id": "",
+        "create_at": 1795268391995,
+        "receipts": [
+          {
+            "MessageID": "8pcnmfbupbg63m5s4fzawids9h",
+            "UserID": "fbdn3hjhypntmxzg3haryeswsc",
+            "ChannelID": "ieidiqhpj3rdx8334nqerkrdiy",
+            "Timestamp": 1795268496976
+          }
+        ]
+      },
+      {
+        "id": "bammio9qqby63q68n4g9nk5tcy",
+        "message": "WIN-WEB-01 | پیام آزمایشی وب به ویندوز — کانال عمومی بازنشده | 2026-11-21",
+        "author_id": "gdm3i1zj1ibm3x5wwu1r6jx1te",
+        "root_id": "",
+        "create_at": 1795267810264,
+        "receipts": [
+          {
+            "MessageID": "bammio9qqby63q68n4g9nk5tcy",
+            "UserID": "fbdn3hjhypntmxzg3haryeswsc",
+            "ChannelID": "ieidiqhpj3rdx8334nqerkrdiy",
+            "Timestamp": 1795267951986
+          }
+        ]
+      },
+      {
+        "id": "eufabzcpzfy3bpqd8z88fzjxny",
+        "message": "WIN-SCROLL-03 | پیام آزمون اسکرول: حضور در همین کانال کافی نیست؛ فقط پس از نمایش واقعی این پیام باید Seen ثبت شود.",
+        "author_id": "gdm3i1zj1ibm3x5wwu1r6jx1te",
+        "root_id": "",
+        "create_at": 1795268915686,
+        "receipts": [
+          {
+            "MessageID": "eufabzcpzfy3bpqd8z88fzjxny",
+            "UserID": "fbdn3hjhypntmxzg3haryeswsc",
+            "ChannelID": "ieidiqhpj3rdx8334nqerkrdiy",
+            "Timestamp": 1795269063578
+          }
+        ]
+      },
+      {
+        "id": "i5r1bsti7fgbura5ba1zjtxmfw",
+        "message": "test by me from win in public",
+        "author_id": "fbdn3hjhypntmxzg3haryeswsc",
+        "root_id": "",
+        "create_at": 1795273315222,
+        "receipts": [
+          {
+            "MessageID": "i5r1bsti7fgbura5ba1zjtxmfw",
+            "UserID": "gdm3i1zj1ibm3x5wwu1r6jx1te",
+            "ChannelID": "ieidiqhpj3rdx8334nqerkrdiy",
+            "Timestamp": 1795273322703
+          }
+        ]
+      },
+      {
+        "id": "yszmrymaf7f8pmd711ba8i48oa",
+        "message": "WIN-REPLY-01 — پیام را دیدم",
+        "author_id": "fbdn3hjhypntmxzg3haryeswsc",
+        "root_id": "",
+        "create_at": 1795267960613,
+        "receipts": [
+          {
+            "MessageID": "yszmrymaf7f8pmd711ba8i48oa",
+            "UserID": "gdm3i1zj1ibm3x5wwu1r6jx1te",
+            "ChannelID": "ieidiqhpj3rdx8334nqerkrdiy",
+            "Timestamp": 1795268025888
+          }
+        ]
+      }
+    ],
+    "private": [
+      {
+        "id": "1aonpndbc3dmtg37gqcozg7oee",
+        "message": "WIN-PRIVATE-04 | پیام آزمون کانال خصوصی: تا بازکردن کانال و مشاهدهٔ واقعی این پیام نباید Seen ثبت شود.",
+        "author_id": "gdm3i1zj1ibm3x5wwu1r6jx1te",
+        "root_id": "",
+        "create_at": 1795269377393,
+        "receipts": [
+          {
+            "MessageID": "1aonpndbc3dmtg37gqcozg7oee",
+            "UserID": "fbdn3hjhypntmxzg3haryeswsc",
+            "ChannelID": "1hqehpmdkjbcxrr1h41oostwdw",
+            "Timestamp": 1795269507584
+          }
+        ]
+      },
+      {
+        "id": "8xjjqu6xc3f8dbik8rusgeno1y",
+        "message": "تست توسط من در وب",
+        "author_id": "gdm3i1zj1ibm3x5wwu1r6jx1te",
+        "root_id": "",
+        "create_at": 1795273156048,
+        "receipts": [
+          {
+            "MessageID": "8xjjqu6xc3f8dbik8rusgeno1y",
+            "UserID": "fbdn3hjhypntmxzg3haryeswsc",
+            "ChannelID": "1hqehpmdkjbcxrr1h41oostwdw",
+            "Timestamp": 1795273167391
+          }
+        ]
+      },
+      {
+        "id": "cqcwo43skjg49x1rntcwgkcync",
+        "message": "test by me from win",
+        "author_id": "fbdn3hjhypntmxzg3haryeswsc",
+        "root_id": "",
+        "create_at": 1795273192652,
+        "receipts": [
+          {
+            "MessageID": "cqcwo43skjg49x1rntcwgkcync",
+            "UserID": "gdm3i1zj1ibm3x5wwu1r6jx1te",
+            "ChannelID": "1hqehpmdkjbcxrr1h41oostwdw",
+            "Timestamp": 1795273217499
+          }
+        ]
+      },
+      {
+        "id": "ogzo46uywf83pcjms4anceiuxo",
+        "message": "WIN-PRIVATE-SCROLL-05 | آزمون اسکرول کانال خصوصی: تا زمانی که این پیام پایین صفحه و خارج از دید است نباید Seen ثبت شود.",
+        "author_id": "gdm3i1zj1ibm3x5wwu1r6jx1te",
+        "root_id": "",
+        "create_at": 1795272538959,
+        "receipts": [
+          {
+            "MessageID": "ogzo46uywf83pcjms4anceiuxo",
+            "UserID": "fbdn3hjhypntmxzg3haryeswsc",
+            "ChannelID": "1hqehpmdkjbcxrr1h41oostwdw",
+            "Timestamp": 1795272672785
+          }
+        ]
+      },
+      {
+        "id": "s36e6j9p5jru7du3gziiwtqfmo",
+        "message": "test by me",
+        "author_id": "fbdn3hjhypntmxzg3haryeswsc",
+        "root_id": "ogzo46uywf83pcjms4anceiuxo",
+        "create_at": 1795273106068,
+        "receipts": [
+          {
+            "MessageID": "s36e6j9p5jru7du3gziiwtqfmo",
+            "UserID": "gdm3i1zj1ibm3x5wwu1r6jx1te",
+            "ChannelID": "1hqehpmdkjbcxrr1h41oostwdw",
+            "Timestamp": 1795273122301
+          }
+        ]
+      },
+      {
+        "id": "wzn4mb7mc7d99cg4puz9hxbjwh",
+        "message": "WIN-THREAD-06 | پاسخ آزمایشی داخل ترد: دیدن پیام اصلی نباید این پاسخ بازنشده را Seen کند.",
+        "author_id": "gdm3i1zj1ibm3x5wwu1r6jx1te",
+        "root_id": "ogzo46uywf83pcjms4anceiuxo",
+        "create_at": 1795272938484,
+        "receipts": [
+          {
+            "MessageID": "wzn4mb7mc7d99cg4puz9hxbjwh",
+            "UserID": "fbdn3hjhypntmxzg3haryeswsc",
+            "ChannelID": "1hqehpmdkjbcxrr1h41oostwdw",
+            "Timestamp": 1795273067393
+          }
+        ]
+      }
+    ],
+    "dm": [],
+    "group": [],
+    "navigation": [
+      {
+        "id": "n6r38t4193g8i8bry4rs7gq6ne",
+        "message": "I'm ready",
+        "author_id": "fbdn3hjhypntmxzg3haryeswsc",
+        "root_id": "",
+        "create_at": 1795267735039,
+        "receipts": [
+          {
+            "MessageID": "n6r38t4193g8i8bry4rs7gq6ne",
+            "UserID": "gdm3i1zj1ibm3x5wwu1r6jx1te",
+            "ChannelID": "ue3pie8fr7847kdwb54nx9bdio",
+            "Timestamp": 1795273213100
+          }
+        ]
+      }
+    ]
+  }
+}

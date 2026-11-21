@@ -1,0 +1,33 @@
+{
+  "at_utc": "2026-11-21T13:33:28.541291+00:00",
+  "users": {
+    "web": "gdm3i1zj1ibm3x5wwu1r6jx1te",
+    "win": "fbdn3hjhypntmxzg3haryeswsc",
+    "third": "n5si1axwd3895coq1b3qgg8bqc",
+    "fourth": "38hqzoxu4irq5dua8o7i9gu1ya",
+    "fifth": "1q1r4647dbg67bd4zf43t5ncny"
+  },
+  "posts": [
+    {
+      "id": "bammio9qqby63q68n4g9nk5tcy",
+      "message": "WIN-WEB-01 | پیام آزمایشی وب به ویندوز — کانال عمومی بازنشده | 2026-11-21",
+      "author_id": "gdm3i1zj1ibm3x5wwu1r6jx1te",
+      "create_at": 1795267810264,
+      "receipts": [
+        {
+          "MessageID": "bammio9qqby63q68n4g9nk5tcy",
+          "UserID": "fbdn3hjhypntmxzg3haryeswsc",
+          "ChannelID": "ieidiqhpj3rdx8334nqerkrdiy",
+          "Timestamp": 1795267951986
+        }
+      ]
+    },
+    {
+      "id": "yszmrymaf7f8pmd711ba8i48oa",
+      "message": "WIN-REPLY-01 — پیام را دیدم",
+      "author_id": "fbdn3hjhypntmxzg3haryeswsc",
+      "create_at": 1795267960613,
+      "receipts": []
+    }
+  ]
+}

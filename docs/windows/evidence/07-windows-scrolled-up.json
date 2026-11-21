@@ -1,0 +1,55 @@
+{
+  "scenario": "WIN-SCROLL-03 same channel scrolled above target",
+  "post_id": "eufabzcpzfy3bpqd8z88fzjxny",
+  "channel_id": "ieidiqhpj3rdx8334nqerkrdiy",
+  "message": "WIN-SCROLL-03 | پیام آزمون اسکرول: حضور در همین کانال کافی نیست؛ فقط پس از نمایش واقعی این پیام باید Seen ثبت شود.",
+  "windows_state_source": "user reports WIN-WEB-01 visible, SCROLL-FIXTURE-08 outside viewport, Windows Mattermost active and open; awaiting optional screenshot",
+  "samples": [
+    {
+      "at_utc": "2026-11-21T13:49:04.208111+00:00",
+      "post_age_ms": 28522,
+      "receipts": []
+    },
+    {
+      "at_utc": "2026-11-21T13:49:06.218063+00:00",
+      "post_age_ms": 30532,
+      "receipts": []
+    },
+    {
+      "at_utc": "2026-11-21T13:49:08.227117+00:00",
+      "post_age_ms": 32541,
+      "receipts": []
+    },
+    {
+      "at_utc": "2026-11-21T13:49:10.240131+00:00",
+      "post_age_ms": 34554,
+      "receipts": []
+    },
+    {
+      "at_utc": "2026-11-21T13:49:12.264202+00:00",
+      "post_age_ms": 36578,
+      "receipts": []
+    },
+    {
+      "at_utc": "2026-11-21T13:49:14.281298+00:00",
+      "post_age_ms": 38595,
+      "receipts": []
+    },
+    {
+      "at_utc": "2026-11-21T13:49:16.286834+00:00",
+      "post_age_ms": 40600,
+      "receipts": []
+    },
+    {
+      "at_utc": "2026-11-21T13:49:18.296491+00:00",
+      "post_age_ms": 42610,
+      "receipts": []
+    },
+    {
+      "at_utc": "2026-11-21T13:49:20.303903+00:00",
+      "post_age_ms": 44617,
+      "receipts": []
+    }
+  ],
+  "no_windows_seen": true
+}

@@ -1,0 +1,55 @@
+{
+  "scenario": "WIN-PRIVATE-SCROLL-05 same private channel scrolled above target",
+  "post_id": "ogzo46uywf83pcjms4anceiuxo",
+  "channel_id": "1hqehpmdkjbcxrr1h41oostwdw",
+  "message": "WIN-PRIVATE-SCROLL-05 | آزمون اسکرول کانال خصوصی: تا زمانی که این پیام پایین صفحه و خارج از دید است نباید Seen ثبت شود.",
+  "windows_state_source": "User confirms scrolled up in private channel after instruction to keep WIN-PRIVATE-04 visible and fixture 08 outside viewport; no Windows screenshot supplied",
+  "samples": [
+    {
+      "at_utc": "2026-11-21T14:49:30.198949+00:00",
+      "post_age_ms": 31240,
+      "receipts": []
+    },
+    {
+      "at_utc": "2026-11-21T14:49:32.207084+00:00",
+      "post_age_ms": 33248,
+      "receipts": []
+    },
+    {
+      "at_utc": "2026-11-21T14:49:34.216840+00:00",
+      "post_age_ms": 35257,
+      "receipts": []
+    },
+    {
+      "at_utc": "2026-11-21T14:49:36.224947+00:00",
+      "post_age_ms": 37265,
+      "receipts": []
+    },
+    {
+      "at_utc": "2026-11-21T14:49:38.239529+00:00",
+      "post_age_ms": 39280,
+      "receipts": []
+    },
+    {
+      "at_utc": "2026-11-21T14:49:40.258390+00:00",
+      "post_age_ms": 41299,
+      "receipts": []
+    },
+    {
+      "at_utc": "2026-11-21T14:49:42.273685+00:00",
+      "post_age_ms": 43314,
+      "receipts": []
+    },
+    {
+      "at_utc": "2026-11-21T14:49:44.289311+00:00",
+      "post_age_ms": 45330,
+      "receipts": []
+    },
+    {
+      "at_utc": "2026-11-21T14:49:46.298304+00:00",
+      "post_age_ms": 47339,
+      "receipts": []
+    }
+  ],
+  "no_windows_seen": true
+}

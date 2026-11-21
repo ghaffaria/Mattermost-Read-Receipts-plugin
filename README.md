@@ -18,6 +18,8 @@ The Android app is based on official Mattermost Mobile v2.46.0, commit `655df13b
 
 Tested with **Mattermost Enterprise12.0.1, schema234, PostgreSQL17.12**, installed **macOS Desktop6.3.2**, two Android16/API36 arm64 emulators and browser clients. Six bidirectional client paths, five-member public/private/group channels, scrolled-up messages, threads, notification shade, short interrupted exposure and reconnects passed within the documented scope.
 
+**Windows desktop ↔ web validated:** official Windows app in UTM passed public/private channel delivery, offscreen scroll, minimize/restore and closed/open thread scenarios. Windows-to-web receipts were also checked. See the [Windows test report and screenshots](docs/WINDOWS.md) for evidence, operator-reported acceptance and version/coverage limits. No custom Windows build is needed.
+
 **Custom Firebase/HPNS push is not configured or qualified.** This is a QA-signed derived app; physical devices, other Android API levels, iOS, HA/load and production Enterprise Advanced policies are not certified. No production deployment was performed.
 
 ## Build and install

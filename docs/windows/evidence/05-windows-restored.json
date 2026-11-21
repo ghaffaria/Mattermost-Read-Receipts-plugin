@@ -1,0 +1,17 @@
+{
+  "scenario": "WIN-MIN-02 restore and visible",
+  "at_utc": "2026-11-21T13:42:23.559088+00:00",
+  "post_id": "8pcnmfbupbg63m5s4fzawids9h",
+  "windows_state_source": "user reports restored and read WIN-MIN-02",
+  "receipts": [
+    {
+      "MessageID": "8pcnmfbupbg63m5s4fzawids9h",
+      "UserID": "fbdn3hjhypntmxzg3haryeswsc",
+      "ChannelID": "ieidiqhpj3rdx8334nqerkrdiy",
+      "Timestamp": 1795268496976
+    }
+  ],
+  "windows_seen": true,
+  "only_windows_reader": true,
+  "receipt_after_last_minimized_sample": true
+}
