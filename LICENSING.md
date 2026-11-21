@@ -1,8 +1,7 @@
-# Licensing / مجوز
+# Licensing
 
 Original project source in `server/`, `webapp/`, `build/` and the project-owned Android preparation script is licensed under **Mozilla Public License 2.0 (MPL-2.0)**. SPDX headers identify covered source files. See [LICENSE](LICENSE). Project-owned manifests, build configuration and documentation are also covered by MPL-2.0 unless an explicit different notice applies. Copyright 2026 Alireza Ghaffari.
 
-این مجوز برای کد و مستندات متعلق به این پروژه است؛ نام و حقوق مؤلف کدهای شخص ثالث را تغییر نمی‌دهد. اعتبار توسعه‌دهنده و لینک فقط در رابط تنظیمات/مشخصات پلاگین اضافه شده و APK تغییر نکرده است.
 
 ## Third-party boundaries
 
@@ -15,4 +14,3 @@ Original project source in `server/`, `webapp/`, `build/` and the project-owned 
 
 See [SOURCE_CODE.txt](SOURCE_CODE.txt) for the versioned source location. Keeping the repository private does not remove obligations to give binary recipients access to the corresponding covered source. Give recipients access or provide a source archive. No requirement to make this repository public is introduced by this update.
 
-خصوصی‌بودن ریپو حفظ شده است. هنگام تحویل فایل اجرایی به دیگران، دسترسی همان دریافت‌کنندگان به سورس متناظر باید مطابق MPL فراهم شود؛ عمومی‌کردن ریپو شرط این مرحله نیست.

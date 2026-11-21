@@ -1,6 +1,6 @@
 # Windows desktop validation — 2026-11-21
 
-[فارسی](WINDOWS.fa.md) · [Overall validation](VALIDATION.md)
+[Overall validation](VALIDATION.md)
 
 **Windows desktop ↔ web: PASS for the scenarios below**, using the official Mattermost Windows app installed by the operator inside UTM. No Windows app modification or Windows-specific plugin package was required. This validates the existing plugin **1.1.1**; release binaries were not rebuilt or replaced.
 

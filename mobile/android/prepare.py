@@ -37,7 +37,7 @@ def main():
             raise SystemExit(f'Prepared source differs from the recorded build: {name}')
     print(f'Prepared {destination}')
     print('Install locked dependencies with: npx --yes npm@11 ci --ignore-scripts')
-    print('Then use scripts/build-read-receipts-qa.sh with the private signing configuration described in README.fa.md.')
+    print('Then use scripts/build-read-receipts-qa.sh with the private signing configuration described in ../../docs/ANDROID.md.')
 
 
 if __name__ == '__main__':
