@@ -1,338 +1,43 @@
-# Mattermost Read Receipts Plugin
+# Mattermost Read Receipts
 
-<p align="center">
-  <img src="https://img.shields.io/badge/Mattermost-v6.0+-blue" alt="Mattermost v6.0+"/>
-  <img src="https://img.shields.io/badge/License-MIT-green" alt="MIT License"/>
-</p>
+[فارسی](README.fa.md) · [Releases](https://github.com/ghaffaria/Mattermost-Read-Receipts-plugin/releases) · [Architecture](docs/ARCHITECTURE.md) · [Validation](docs/VALIDATION.md)
 
-WhatsApp/Telegram-style **"Seen by..."** indicators for Mattermost. Get real-time visibility into who has read your messages.
+Plugin **1.1.1** and derived Android client **2.46.0-rr.1** provide automatic, explicit per-message receipts. A message must remain visible in the focused, active conversation for **2 continuous seconds** by default. Authors see **✓✓ Seen by …** with server-confirmed readers. Receiving a message or advancing a channel read cursor does not create a receipt.
 
-<p align="center">
-  <img src="image/channel.jpg" width="45%"/>
-  <img src="image/user1.jpg" width="45%"/>
-</p>
+## Download
 
----
+Use the **v1.1.1-android-2.46.0-rr.1** release:
 
-## ✨ Features
+- `mattermost-readreceipts-1.1.1.tar.gz`: Linux amd64/arm64 plugin.
+- `mattermost-read-receipts-android-2.46.0-rr.1-arm64-v8a.apk`: separately signed Android QA app.
+- `SHA256SUMS`: verify downloads before installation.
 
-- **Real-time read receipts** — See who has read your messages instantly
-- **Works everywhere** — Direct messages, group messages, and channels
-- **Smart detection** — Messages must be visible for 2+ seconds to count as "read"
-- **Persistent** — Receipts survive page refreshes and server restarts
-- **Automatic cleanup** — Old receipts are purged based on retention settings
-- **Modern UI** — Clean, inline "Seen by..." badges
+The Android app is based on official Mattermost Mobile v2.46.0, commit `655df13b131da6810f4f073622c925af1b87c3fb`. Its package ID is `com.pardis.mattermost.readreceipts.qa`; it installs alongside the official app. It does not replace the official app or reuse its data. The unchanged official Android app does not implement this custom receipt protocol.
 
----
+## Verified scope
 
-## 📦 Installation
+Tested with **Mattermost Enterprise12.0.1, schema234, PostgreSQL17.12**, installed **macOS Desktop6.3.2**, two Android16/API36 arm64 emulators and browser clients. Six bidirectional client paths, five-member public/private/group channels, scrolled-up messages, threads, notification shade, short interrupted exposure and reconnects passed within the documented scope.
 
-1. Download the latest release: **[mattermost-readreceipts-2025.12.08.1758.tar.gz](https://github.com/ghaffaria/Mattermost-Read-Receipts/releases/download/v0.1.2/mattermost-readreceipts-2025.12.08.1758.tar.gz)**
-2. Go to **System Console → Plugins → Plugin Management**
-3. Upload and enable the plugin
-4. Done! Receipts will appear next to messages
+**Custom Firebase/HPNS push is not configured or qualified.** This is a QA-signed derived app; physical devices, other Android API levels, iOS, HA/load and production Enterprise Advanced policies are not certified. No production deployment was performed.
 
----
+## Build and install
 
-## ⚙️ Configuration
-
-Navigate to **System Console → Plugins → Read Receipts**
-
-| Setting | Default | Description |
-|---------|---------|-------------|
-| **Enable Read Receipts** | `true` | Master on/off switch |
-| **Visibility Threshold** | `2000ms` | How long a message must be visible to be marked as read |
-| **Retention Days** | `30` | Automatic cleanup of old receipts |
-| **Log Level** | `info` | Set to `debug` for troubleshooting |
-
----
-
-## 🔧 Compatibility
-
-| Component | Minimum Version |
-|-----------|-----------------|
-| Mattermost Server | v6.0+ (Team or Enterprise) |
-| PostgreSQL | 13.x+ |
-| MySQL/MariaDB | 8.0+ / 10.6+ |
-
-> **Note:** The plugin uses Mattermost's existing database connection. Ensure the DSN is properly configured in **System Console → Environment → Database** (not masked).
-
----
-
-## 🏗️ Building from Source
-
-```bash
-git clone https://github.com/ghaffaria/mattermost-readreceipts.git
-cd mattermost-readreceipts
-
-# Build everything
+```sh
+cd webapp
+npm ci
+cd ..
+make test
 make dist
-
-# Output: dist/mattermost-readreceipts-<timestamp>.tar.gz
 ```
 
-### Development with Docker
+Go, Node/npm and Python3 are required. See [Android build](docs/ANDROID.md) and [installation / rollback](docs/INSTALLATION.md). Runtime configuration, databases, credentials and signing keys are intentionally excluded.
 
-```bash
-docker-compose up -d        # Start Mattermost + Postgres
-make dev                    # Build and deploy to running instance
-```
+## Screenshot
 
----
+![Different readers for the second message in a five-member group](docs/screenshots/desktop-five-member-readers.png)
 
-## 🔌 Architecture
+The screenshots contain synthetic accounts in an isolated local test environment. See [validation and additional screenshots](docs/VALIDATION.md) for negative cases and their matching positive cases.
 
-### Component Overview
+## Repository replacement
 
-```mermaid
-graph TB
-    subgraph Frontend
-        RP[ReadReceiptPlugin]
-        RRO[ReadReceiptRootObserver]
-        PR[PostReceipt Component]
-        VT[VisibilityTracker]
-        RS[Redux Store]
-    end
-    
-    subgraph Backend
-        API[API Endpoints]
-        WS[WebSocket Server]
-        DB[(Database)]
-    end
-    
-    RP -->|Initializes| RS
-    RP -->|Registers| RRO
-    RP -->|Registers| PR
-    RRO -->|Tracks| VT
-    VT -->|Reports Visibility| PR
-    PR -->|Updates| RS
-    RS -->|WebSocket Events| WS
-    WS -->|Real-time Updates| RS
-    PR -->|Read Status| API
-    API -->|Store/Retrieve| DB
-```
-
-### Message Read Flow
-
-```mermaid
-sequenceDiagram
-    participant U as User
-    participant VT as VisibilityTracker
-    participant C as Client Store
-    participant WS as WebSocket
-    participant S as Server
-    participant DB as Database
-    
-    U->>VT: Views message
-    VT->>VT: Wait 2000ms
-    VT->>C: Mark as read
-    C->>WS: Send read event
-    WS->>S: Forward event
-    S->>DB: Store receipt
-    S->>WS: Broadcast to channel
-    WS->>C: Update UI
-```
-
----
-
-## 🚨 Troubleshooting
-
-| Issue | Solution |
-|-------|----------|
-| Receipts don't appear | Check browser console for errors; refresh the page |
-| Plugin won't activate | Verify database DSN is not masked in System Console |
-| "Seen by" missing after channel switch | This was fixed in the latest version - please update |
-| Receipts not updating in real-time | Check WebSocket connection in browser DevTools |
-
-### Debug Mode
-
-Enable verbose logging in browser console:
-
-```javascript
-window.__DEBUG_RR__ = { verbose: true };
-```
-
----
-
-## 📡 API Reference
-
-### REST Endpoints
-
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| `POST` | `/plugins/mattermost-readreceipts/api/v1/read` | Mark a message as read |
-| `GET` | `/plugins/mattermost-readreceipts/api/v1/receipts?channel_id=...` | Get receipts for channel |
-| `GET` | `/plugins/mattermost-readreceipts/api/v1/channel/{id}/reads` | Get channel-level reads |
-| `GET` | `/plugins/mattermost-readreceipts/api/v1/debug/ping` | Health check (admin only) |
-| `GET` | `/plugins/mattermost-readreceipts/api/v1/debug/db` | Database status (admin only) |
-
-### WebSocket Events
-
-| Event | Payload | Description |
-|-------|---------|-------------|
-| `custom_mattermost-readreceipts_read_receipt` | `{ MessageID, UserID, ChannelID, ReaderIDs }` | Sent when message is read |
-| `custom_mattermost-readreceipts_channel_readers` | `{ ChannelID, LastPostID, UserIDs }` | Channel-level update |
-
----
-
-## 🗄️ Database Schema
-
-The plugin automatically creates these tables:
-
-### PluginReadReceipts
-Per-message read tracking.
-
-| Column | Type | Description |
-|--------|------|-------------|
-| message_id | TEXT | Post ID (PK) |
-| user_id | TEXT | Reader's user ID (PK) |
-| channel_id | TEXT | Channel ID |
-| timestamp | BIGINT | When read (milliseconds) |
-
-### channel_reads
-Channel-level read status.
-
-| Column | Type | Description |
-|--------|------|-------------|
-| channel_id | TEXT | Channel ID (PK) |
-| user_id | TEXT | User ID (PK) |
-| last_post_id | TEXT | Last seen post ID |
-| last_seen_at | BIGINT | Timestamp (milliseconds) |
-
----
-
-## 🤝 Contributing
-
-1. Fork the repository
-2. Create a feature branch from `main`
-3. Make your changes with tests
-4. Submit a pull request
-
----
-
-## 📄 License
-
-[MIT](LICENSE)
-
----
-
-## 🙏 Acknowledgements
-
-- Mattermost team for the plugin framework
-- All contributors and testers
-
----
-
-## 🚀 Production Readiness
-
-### ⚠️ Considerations Before Production
-
-| Concern | Recommendation |
-|---------|----------------|
-| **Load Testing** | Not tested with 100+ concurrent users. Recommend testing in staging first. |
-| **Database Growth** | Monitor `PluginReadReceipts` table size. Set appropriate `RetentionDays`. |
-| **Browser Compatibility** | Tested in Chrome. Recommend testing in Firefox/Safari/Edge. |
-| **Mobile Apps** | May not work in Mattermost mobile apps (React Native). |
-| **Performance Impact** | Each message view triggers an API call. High-traffic channels may see increased load. |
-
-### 🔴 Recommended Pre-Production Checklist
-
-- [ ] Test in staging environment with real users for 1-2 weeks
-- [ ] Monitor database - Set `RetentionDays` to 30 or less
-- [ ] Check server logs - Watch for any backend errors
-- [ ] Test with multiple browsers - Ensure cross-browser compatibility
-- [ ] Backup database before enabling in production
-
-### �� Honest Assessment
-
-| Rating | Score |
-|--------|-------|
-| **Stability** | 7/10 - Core features work, but not battle-tested at scale |
-| **Completeness** | 8/10 - All planned features implemented |
-| **Code Quality** | 7/10 - Functional with some workarounds for edge cases |
-| **Production Ready** | **70%** - Safe for small teams, recommend staging for larger deployments |
-
-### 💡 Recommendation
-
-**For small to medium teams** (< 50 users): Safe to deploy with monitoring.
-
-**For large organizations** (100+ users): Deploy to staging first for 1-2 weeks, then gradually roll out.
-
----
-
-## 🔍 Debug Mode & Troubleshooting
-
-The plugin includes comprehensive debug logging that is **disabled by default** for clean console output. Enable it when troubleshooting issues.
-
-### Enable Debug Mode
-
-Open your browser console (F12 → Console) and run:
-
-```javascript
-window.__DEBUG_RR__ = { verbose: true };
-```
-
-Then refresh the page or switch channels to see debug output.
-
-### What Debug Mode Shows
-
-| Log Prefix | What It Tracks |
-|------------|----------------|
-| `[WebSocket Reinject]` | Real-time receipt updates via WebSocket |
-| `[RR DM]` | Direct message read receipt processing |
-| `[RR Channel]` | Channel/group message read receipts |
-| `[DOM Injection]` | Receipt element insertion into DOM |
-| `[VisibilityTracking]` | Message visibility detection and read events |
-| `[Store]` | Redux store operations and data loading |
-| `[RootObserver]` | DOM mutation observer events |
-| `[ReadReceiptPlugin]` | Plugin initialization and channel changes |
-
-### Common Debug Scenarios
-
-#### Scenario 1: Receipts Not Appearing
-1. Enable debug mode
-2. Send a message in a DM
-3. Look for:
-   - `[DOM Injection] Starting:` - Confirms injection attempted
-   - `[DOM Injection] Found X post elements` - Posts were found
-   - `[DOM Injection] Complete: { injectedCount: X }` - Number of receipts added
-
-#### Scenario 2: Real-time Updates Not Working
-1. Enable debug mode on **both** sender and receiver browsers
-2. Receiver reads a message
-3. On **receiver**, look for:
-   - `[VisibilityTracking] Sending read receipt for: XXXX`
-   - `[VisibilityTracking] Read receipt sent successfully`
-4. On **sender**, look for:
-   - `[RR DM] Processing DM read receipt via WebSocket`
-   - `[WebSocket Reinject] Will inject. Payload posts: X`
-
-#### Scenario 3: Channel Switch Issues
-1. Enable debug mode
-2. Switch between channels
-3. Look for:
-   - `[ReadReceiptPlugin] Channel change: oldChannel -> newChannel`
-   - `[DOM Injection] Result: { hasPayload: true, postCount: X }`
-
-### Server-Side Debugging
-
-Check Mattermost server logs for backend issues:
-
-```bash
-# Docker
-docker logs mattermost 2>&1 | grep -i "readreceipts" | tail -50
-
-# Systemd
-journalctl -u mattermost -n 100 | grep -i "readreceipts"
-
-# Log file
-tail -100 /opt/mattermost/logs/mattermost.log | grep -i "readreceipts"
-```
-
-### Disable Debug Mode
-
-```javascript
-delete window.__DEBUG_RR__;
-```
-
-Or simply refresh the page.
+The previous working tree was replaced with the current implementation on2026-11-21. Earlier commits and the previous release remain recoverable in Git history. The server plugin and APK are the exact tested artifacts; checksums identify their bytes. The Android source is supplied as a verified patch against the pinned official upstream, with a preparation script. Upstream mobile licensing is available in the [official repository](https://github.com/mattermost/mattermost-mobile/tree/v2.46.0).

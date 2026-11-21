@@ -2,9 +2,9 @@ package main
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/arg/mattermost-readreceipts/server/store"
@@ -13,610 +13,222 @@ import (
 	"github.com/mattermost/mattermost-server/v6/plugin"
 )
 
-// Using model.ReadRequest and model.ReadEvent defined in model.go
-
-func (p *Plugin) ServeHTTP(c *plugin.Context, w http.ResponseWriter, r *http.Request) {
-	router := mux.NewRouter()
-
-	router.Handle("/api/v1/read", p.MattermostAuthorizationRequired(http.HandlerFunc(p.HandleReadReceipt))).Methods("POST")
-	router.Handle("/api/v1/channel/{channelID}/readers", p.MattermostAuthorizationRequired(http.HandlerFunc(p.HandleGetChannelReaders))).Methods("GET")
-	router.Handle("/api/v1/channel/{channelID}/reads", p.MattermostAuthorizationRequired(http.HandlerFunc(p.HandleGetChannelReads))).Methods("GET")
-	router.Handle("/api/v1/receipts", p.MattermostAuthorizationRequired(http.HandlerFunc(p.HandleGetReceipts))).Methods("GET")
-	router.Handle("/api/v1/config", p.MattermostAuthorizationRequired(http.HandlerFunc(p.HandleGetConfig))).Methods("GET")
-	router.Handle("/api/v1/debug/ping", http.HandlerFunc(p.HandlePing)).Methods("GET")
-	router.Handle("/api/v1/debug/db", p.MattermostAuthorizationRequired(http.HandlerFunc(p.HandleDBCheck))).Methods("GET")
-	router.Handle("/api/v1/read/channel/{channelID}", p.MattermostAuthorizationRequired(http.HandlerFunc(p.HandleGetReadersSince))).Methods("GET")
-
-	p.logDebug("[API] Received request",
-		"path", r.URL.Path,
-		"method", r.Method,
-		"user_agent", r.UserAgent(),
-		"content_type", r.Header.Get("Content-Type"),
-		"has_csrf", r.Header.Get("X-CSRF-Token") != "",
-		"has_user_id", r.Header.Get("Mattermost-User-Id") != "",
-	)
-
-	router.ServeHTTP(w, r)
+func writeJSON(w http.ResponseWriter, value interface{}) {
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Cache-Control", "no-store")
+	_ = json.NewEncoder(w).Encode(value)
 }
 
+func (p *Plugin) ServeHTTP(_ *plugin.Context, w http.ResponseWriter, r *http.Request) {
+	router := mux.NewRouter()
+	router.HandleFunc("/api/v1/debug/ping", p.HandlePing).Methods(http.MethodGet)
+	api := router.PathPrefix("/api/v1").Subrouter()
+	api.Use(p.MattermostAuthorizationRequired)
+	api.HandleFunc("/read", p.HandleReadReceipt).Methods(http.MethodPost)
+	api.HandleFunc("/receipts", p.HandleGetReceipts).Methods(http.MethodGet)
+	api.HandleFunc("/config", p.HandleGetConfig).Methods(http.MethodGet)
+	api.HandleFunc("/channel/{channelID}/reads", p.HandleGetChannelReads).Methods(http.MethodGet)
+	api.HandleFunc("/channel/{channelID}/readers", p.HandleGetChannelReaders).Methods(http.MethodGet)
+	api.HandleFunc("/read/channel/{channelID}", p.HandleGetReadersSince).Methods(http.MethodGet)
+	api.HandleFunc("/debug/db", p.HandleDBCheck).Methods(http.MethodGet)
+	router.ServeHTTP(w, r)
+}
 func (p *Plugin) MattermostAuthorizationRequired(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		userID := r.Header.Get("Mattermost-User-Id")
-		if userID == "" {
-			userID = r.Header.Get("Mattermost-User-ID")
-		}
-		if userID == "" {
-			p.logError("[API] Unauthorized request", "path", r.URL.Path, "method", r.Method)
+		if r.Header.Get("Mattermost-User-ID") == "" {
 			http.Error(w, "Not authorized", http.StatusUnauthorized)
 			return
 		}
-
-		r = r.WithContext(r.Context())
 		next.ServeHTTP(w, r)
 	})
 }
-
-func (p *Plugin) HandlePing(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(map[string]string{
-		"status": "ok",
-		"time":   time.Now().String(),
-	})
+func (p *Plugin) allowed(w http.ResponseWriter, r *http.Request, channelID string) bool {
+	if channelID == "" {
+		http.Error(w, "channel_id is required", 400)
+		return false
+	}
+	if !p.API.HasPermissionToChannel(r.Header.Get("Mattermost-User-ID"), channelID, model.PermissionReadChannel) {
+		http.Error(w, "Forbidden", 403)
+		return false
+	}
+	return true
 }
-
-func (p *Plugin) HandleDBCheck(w http.ResponseWriter, r *http.Request) {
+func (p *Plugin) ready(w http.ResponseWriter) bool {
+	if !p.getConfiguration().Enable {
+		http.Error(w, "Read receipts disabled", 503)
+		return false
+	}
 	if p.store == nil {
-		p.logError("[DB] Store not initialized")
-		http.Error(w, "Database not initialized", http.StatusInternalServerError)
-		return
+		http.Error(w, "Receipt store unavailable", 503)
+		return false
 	}
-
-	_, err := p.store.GetByChannel("test", "test")
-	if err != nil {
-		p.logError("[DB] Database check failed", "error", err.Error())
-		http.Error(w, "Database error", http.StatusInternalServerError)
-		return
-	}
-
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(map[string]interface{}{
-		"status": "ok",
-		"time":   time.Now().String(),
-	})
+	return true
 }
-
+func (p *Plugin) HandlePing(w http.ResponseWriter, r *http.Request) {
+	writeJSON(w, map[string]string{"status": "ok", "version": "1.1.1"})
+}
+func (p *Plugin) HandleDBCheck(w http.ResponseWriter, r *http.Request) {
+	if !p.API.HasPermissionTo(r.Header.Get("Mattermost-User-ID"), model.PermissionManageSystem) {
+		http.Error(w, "Forbidden", 403)
+		return
+	}
+	if !p.ready(w) {
+		return
+	}
+	if _, err := p.store.GetByChannel("", ""); err != nil {
+		http.Error(w, "Database unavailable", 503)
+		return
+	}
+	writeJSON(w, map[string]string{"status": "ok"})
+}
 func (p *Plugin) HandleReadReceipt(w http.ResponseWriter, r *http.Request) {
-	userID := r.Header.Get("Mattermost-User-Id")
-	if userID == "" {
-		userID = r.Header.Get("Mattermost-User-ID")
+	if !p.ready(w) {
+		return
 	}
-
-	p.logDebug("[API] Processing read receipt request",
-		"user_id", userID,
-		"content_type", r.Header.Get("Content-Type"),
-		"content_length", r.ContentLength,
-		"csrf_token", r.Header.Get("X-CSRF-Token") != "",
-	)
-
-	// Verify log level at the start of every read receipt request
-	p.API.LogWarn("[DEBUG-RR] Current plugin log level for read receipt handling: " + p.getConfiguration().LogLevel)
-
-	decoder := json.NewDecoder(r.Body)
 	var req ReadRequest
-	if err := decoder.Decode(&req); err != nil {
-		p.logError("[API] Failed to decode request body", "error", err.Error(), "body", r.Body)
-		http.Error(w, "Invalid request format", http.StatusBadRequest)
+	if err := json.NewDecoder(http.MaxBytesReader(w, r.Body, 4096)).Decode(&req); err != nil || req.MessageID == "" {
+		http.Error(w, "Invalid receipt", 400)
 		return
 	}
-
-	// Debug log the received request
-	p.logDebug("[API] Received read receipt request",
-		"message_id", req.MessageID,
-		"channel_id", req.ChannelID,
-		"user_id", userID)
-
-	// Validate message_id
-	if req.MessageID == "" {
-		p.logError("[API] Missing message_id in request")
-		http.Error(w, "message_id is required", http.StatusBadRequest)
-		return
-	}
-
-	// Get post to verify channel_id if not provided
 	post, err := p.API.GetPost(req.MessageID)
+	if err != nil || post == nil || post.DeleteAt != 0 {
+		http.Error(w, "Invalid message", 400)
+		return
+	}
+	if req.ChannelID != "" && req.ChannelID != post.ChannelId {
+		http.Error(w, "Message/channel mismatch", 400)
+		return
+	}
+	if !p.allowed(w, r, post.ChannelId) {
+		return
+	}
+	userID := r.Header.Get("Mattermost-User-ID")
+	// Sending a post does not constitute a read by its audience.
+	if userID == post.UserId {
+		writeJSON(w, map[string]string{"status": "ok"})
+		return
+	}
+	event := store.ReadEvent{MessageID: post.Id, UserID: userID, ChannelID: post.ChannelId, Timestamp: time.Now().UnixMilli()}
+	if err := p.store.SaveReceipt(event); err != nil {
+		p.logError("Failed to save receipt")
+		http.Error(w, "Failed to save receipt", 500)
+		return
+	}
+	// Broadcast only after the transaction commits. Every session of the reader
+	// also receives the update, keeping multi-device state coherent.
+	p.API.PublishWebSocketEvent(EventReadReceipt, map[string]interface{}{
+		"MessageID": post.Id, "UserID": userID, "ChannelID": post.ChannelId, "Timestamp": event.Timestamp,
+	}, &model.WebsocketBroadcast{ChannelId: post.ChannelId})
+	writeJSON(w, map[string]string{"status": "ok"})
+}
+func (p *Plugin) HandleGetReceipts(w http.ResponseWriter, r *http.Request) {
+	if !p.ready(w) {
+		return
+	}
+	channelID := r.URL.Query().Get("channel_id")
+	if !p.allowed(w, r, channelID) {
+		return
+	}
+	since, err := p.getSinceMillis(r)
 	if err != nil {
-		p.logError("[API] Failed to get post",
-			"message_id", req.MessageID,
-			"error", err.Error(),
-			"user_id", userID)
-		http.Error(w, "Invalid message_id", http.StatusBadRequest)
+		http.Error(w, err.Error(), 400)
 		return
 	}
-
-	channelID := req.ChannelID
-	if channelID == "" {
-		channelID = post.ChannelId
-		p.logDebug("[API] Using channel_id from post",
-			"channel_id", channelID,
-			"message_id", req.MessageID)
-	}
-
-	// Get channel info to check if it's a DM
-	channel, appErr := p.API.GetChannel(channelID)
-	if appErr != nil {
-		p.logError("[API] Failed to get channel info", "channel_id", channelID, "error", appErr.Error())
-		http.Error(w, "Failed to get channel info", http.StatusInternalServerError)
-		return
-	}
-
-	// Save receipt to database first
-	readEvent := store.ReadEvent{
-		MessageID: req.MessageID,
-		UserID:    userID,
-		ChannelID: channelID,
-		Timestamp: time.Now().UnixMilli(),
-	}
-
-	p.logDebug("[API] Attempting to save read event",
-		"message_id", req.MessageID,
-		"user_id", userID,
-		"channel_id", channelID,
-	)
-
-	if err := p.store.Upsert(readEvent); err != nil {
-		p.logError("[API] Failed to save read event", "error", err.Error())
-		http.Error(w, "Failed to save read event", http.StatusInternalServerError)
-		return
-	}
-
-	p.logDebug("[API] Successfully saved read event",
-		"message_id", req.MessageID,
-		"user_id", userID,
-	)
-
-	// Get all current readers for this message first
-	channelEvents, storeErr := p.store.GetByChannel(channelID, "")
-	if storeErr != nil {
-		p.logError("[API] Failed to get channel events", "channel_id", channelID, "error", storeErr.Error())
-	}
-
-	// Initialize with current reader
-	userIDs := []string{userID}
-	userIDMap := map[string]bool{userID: true}
-
-	// Add historical readers
-	if storeErr == nil {
-		for _, event := range channelEvents {
-			if event.MessageID == req.MessageID && !userIDMap[event.UserID] {
-				userIDMap[event.UserID] = true
-				userIDs = append(userIDs, event.UserID)
-			}
-		}
-	}
-
-	if channel.Type == model.ChannelTypeDirect {
-		// DM channel handling - notify the other participant only
-		p.API.LogWarn("[DEBUG-RR-DM] 🔍 Starting DM read receipt processing",
-			"channelID", channelID,
-			"messageID", req.MessageID,
-			"readerID", userID,
-			"postAuthorID", post.UserId,
-		)
-
-		// Log current state of readers
-		p.API.LogWarn("[DEBUG-RR-DM] 📊 Current readers state",
-			"allReaders", userIDs,
-			"currentReader", userID,
-			"messageID", req.MessageID,
-		)
-
-		// Get DM channel members
-		members, appErr := p.API.GetChannelMembers(channelID, 0, 2)
-		if appErr != nil {
-			p.logError("[API] Failed to get DM members", "channel_id", channelID, "error", appErr.Error())
-			http.Error(w, "Failed to get DM members", http.StatusInternalServerError)
+	var ids []string
+	if raw := r.URL.Query().Get("post_ids"); raw != "" {
+		ids = strings.Split(raw, ",")
+		if len(ids) > 200 {
+			http.Error(w, "Too many posts", 400)
 			return
 		}
-
-		p.API.LogWarn("[DEBUG-RR-DM] 👥 DM channel members retrieved",
-			"memberCount", len(members),
-			"channelID", channelID,
-		)
-
-		// Send to other DM participant only
-		for _, member := range members {
-			if member.UserId != userID {
-				// Build event data with detailed state
-				eventData := map[string]interface{}{
-					"MessageID": req.MessageID,
-					"UserID":    userID,
-					"ChannelID": channelID,
-					"IsDM":      true,
-					"Timestamp": readEvent.Timestamp,
-					"ReaderIDs": userIDs,
-					"Author":    post.UserId,
-				}
-
-				p.API.LogWarn("[DEBUG-RR-DM] 📨 Preparing to send DM read receipt",
-					"targetUserID", member.UserId,
-					"messageID", req.MessageID,
-					"readerIDs", userIDs,
-					"eventData", eventData,
-				)
-
-				// Send to other participant
-				p.API.PublishWebSocketEvent(
-					WebSocketEventReadReceipt,
-					eventData,
-					&model.WebsocketBroadcast{
-						UserId: member.UserId,
-					},
-				)
-
-				p.API.LogWarn("[DEBUG-RR-DM] ✅ Sent read receipt to DM participant",
-					"targetUserID", member.UserId,
-					"messageID", req.MessageID,
-				)
-
-				// If message author is different from both participants, notify them too
-				if post.UserId != member.UserId && post.UserId != userID {
-					p.API.LogWarn("[DEBUG-RR-DM] 📨 Sending read receipt to message author",
-						"authorID", post.UserId,
-						"messageID", req.MessageID,
-					)
-
-					p.API.PublishWebSocketEvent(
-						WebSocketEventReadReceipt,
-						eventData,
-						&model.WebsocketBroadcast{
-							UserId: post.UserId,
-						},
-					)
-
-					p.API.LogWarn("[DEBUG-RR-DM] ✅ Sent read receipt to message author",
-						"authorID", post.UserId,
-						"messageID", req.MessageID,
-					)
-				}
-
-				p.API.LogWarn("[DEBUG-RR-DM] 🏁 Completed DM read receipt processing",
-					"messageID", req.MessageID,
-					"readerID", userID,
-					"channelID", channelID,
-				)
-
-				break // Only need to send to one other participant
-			}
-		}
-	} else {
-		// Standard channel broadcast logic
-		p.API.LogWarn("[DEBUG-RR] Processing read receipt for standard channel:",
-			"channelID", channelID,
-			"messageID", req.MessageID,
-			"readerID", userID,
-		)
-
-		// Send read receipt to the author
-		p.API.PublishWebSocketEvent(
-			WebSocketEventReadReceipt,
-			map[string]interface{}{
-				"MessageID": post.Id,
-				"UserID":    userID,
-				"ChannelID": channelID,
-			},
-			&model.WebsocketBroadcast{
-				UserId: post.UserId,
-			},
-		)
-
-		// For regular channels, broadcast channel readers update
-		p.API.LogDebug("[DEBUG-RR] Broadcasting channel readers update",
-			"channelID", channelID,
-			"messageID", req.MessageID,
-			"readerID", userID,
-		)
-
-		// Gather all current readers for this message
-		channelEvents, storeErr := p.store.GetByChannel(channelID, "")
-		if storeErr != nil {
-			p.logError("[API] Failed to get channel events", "channel_id", channelID, "error", storeErr.Error())
-		}
-
-		// Initialize with current reader
-		userIDs := []string{userID}
-		userIDMap := map[string]bool{userID: true}
-
-		// Add historical readers
-		if storeErr == nil {
-			for _, event := range channelEvents {
-				if event.MessageID == req.MessageID && !userIDMap[event.UserID] {
-					userIDMap[event.UserID] = true
-					userIDs = append(userIDs, event.UserID)
-				}
-			}
-		}
-
-		// Single broadcast with all readers
-		p.API.PublishWebSocketEvent(
-			WebSocketEventChannelReaders,
-			map[string]interface{}{
-				"ChannelID":  channelID,
-				"LastPostID": req.MessageID,
-				"UserIDs":    userIDs,
-			},
-			&model.WebsocketBroadcast{
-				ChannelId: channelID,
-			},
-		)
 	}
-
-	// No final broadcast needed - DM and channel broadcasts are already handled above
-
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(map[string]interface{}{
-		"status": "ok",
+	events, err := p.store.GetForPosts(channelID, ids, since)
+	if err != nil {
+		http.Error(w, "Unable to load receipts", 500)
+		return
+	}
+	if events == nil {
+		events = []store.ReadEvent{}
+	}
+	writeJSON(w, events)
+}
+func (p *Plugin) HandleGetConfig(w http.ResponseWriter, r *http.Request) {
+	cfg := p.getConfiguration()
+	writeJSON(w, map[string]interface{}{
+		"enable": cfg.Enable, "visibility_threshold_ms": cfg.VisibilityThresholdMs,
+		"retention_days": cfg.RetentionDays, "enable_cleanup": cfg.EnableCleanup, "log_level": cfg.LogLevel,
 	})
 }
-
-// HandleSimpleRead – GET /read/simple?post_id=… (helper for tests)
-func (p *Plugin) HandleSimpleRead(w http.ResponseWriter, r *http.Request) {
-	userID := r.Header.Get("Mattermost-User-Id")
-	if userID == "" {
-		http.Error(w, "unauth", http.StatusUnauthorized)
-		return
-	}
-	postID := r.URL.Query().Get("post_id")
-	if postID == "" {
-		http.Error(w, "post_id required", 400)
-		return
-	}
-
-	post, err := p.API.GetPost(postID)
-	if err != nil {
-		http.Error(w, "not found", 404)
-		return
-	}
-	_ = p.readReceiptStore.MarkPostAsRead(post.Id, userID)
-
-	// read_receipt event
-	p.API.PublishWebSocketEvent(EventReadReceipt, map[string]interface{}{
-		"MessageID": post.Id,
-		"UserID":    userID,
-		"ChannelID": post.ChannelId,
-	}, &model.WebsocketBroadcast{ChannelId: post.ChannelId, OmitUsers: map[string]bool{userID: true}})
-
-	// channel_readers aggregate
-	p.API.PublishWebSocketEvent(EventChannelReaders, map[string]interface{}{
-		"ChannelID":  post.ChannelId,
-		"LastPostID": post.Id,
-		"UserIDs":    []string{userID},
-	}, &model.WebsocketBroadcast{ChannelId: post.ChannelId, OmitUsers: map[string]bool{userID: true}})
-}
-
-func (p *Plugin) HandleGetReceipts(w http.ResponseWriter, r *http.Request) {
-	userID := r.Header.Get("Mattermost-User-Id")
-	if userID == "" {
-		userID = r.Header.Get("Mattermost-User-ID")
-	}
-
-	channelID := r.URL.Query().Get("channel_id")
-	if channelID == "" {
-		p.logError("[API] Missing channel_id parameter")
-		http.Error(w, "Missing channel_id parameter", http.StatusBadRequest)
-		return
-	}
-
-	p.logDebug("[API] Fetching channel receipts",
-		"channel_id", channelID,
-		"user_id", userID)
-
-	var sinceMs int64 = 0
-	if r.URL.Query().Get("since") != "" || r.URL.Query().Get("postID") != "" {
-		var err error
-		sinceMs, err = p.getSinceMillis(r)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusBadRequest)
-			return
-		}
-	}
-
-	// Get read events for the channel since the given time
-	events, err := p.store.GetByChannel(channelID, "")
-	if err != nil {
-		p.logError("[API] Failed to fetch channel receipts",
-			"channel_id", channelID,
-			"since", sinceMs,
-			"error", err.Error())
-		http.Error(w, "Failed to fetch channel receipts", http.StatusInternalServerError)
-		return
-	}
-
-	// Filter events by timestamp if since parameter is provided
-	if sinceMs > 0 {
-		filteredEvents := make([]store.ReadEvent, 0)
-		for _, event := range events {
-			if event.Timestamp >= sinceMs {
-				filteredEvents = append(filteredEvents, event)
-			}
-		}
-		events = filteredEvents
-	}
-
-	p.logDebug("[API] Returning read receipts",
-		"channel_id", channelID,
-		"event_count", len(events))
-
-	w.Header().Set("Content-Type", "application/json")
-	if err := json.NewEncoder(w).Encode(events); err != nil {
-		p.logError("[API] Error encoding response",
-			"channel_id", channelID,
-			"error", err.Error())
-		http.Error(w, "Error encoding response", http.StatusInternalServerError)
-		return
-	}
-}
-
-func (p *Plugin) HandleGetConfig(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
-
-	conf := p.getConfiguration()
-	cfg := map[string]interface{}{
-		"visibility_threshold_ms": conf.VisibilityThresholdMs,
-		"retention_days":          conf.RetentionDays,
-		"log_level":               conf.LogLevel,
-	}
-
-	if err := json.NewEncoder(w).Encode(cfg); err != nil {
-		p.logError("[API] Error encoding config response", "error", err.Error())
-		http.Error(w, "Error encoding response", http.StatusInternalServerError)
-	}
-}
-
-func (p *Plugin) HandleGetReadersSince(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	channelID := vars["channelID"]
-	if channelID == "" {
-		http.Error(w, "Missing channel ID", http.StatusBadRequest)
-		return
-	}
-
-	userID := r.Header.Get("Mattermost-User-Id")
-	if userID == "" {
-		http.Error(w, "Unauthorized", http.StatusUnauthorized)
-		return
-	}
-
-	sinceMs, err := p.getSinceMillis(r)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
-
-	readers, err := p.store.GetReadersSince(channelID, sinceMs, userID)
-	if err != nil {
-		p.logError("[API] Failed to get readers since",
-			"channel_id", channelID,
-			"since", sinceMs,
-			"error", err.Error())
-		http.Error(w, "Failed to get readers", http.StatusInternalServerError)
-		return
-	}
-
-	w.Header().Set("Content-Type", "application/json")
-	if err := json.NewEncoder(w).Encode(readers); err != nil {
-		http.Error(w, "Failed to encode response", http.StatusInternalServerError)
-	}
-}
-
-// HandleGetChannelReaders handles GET /api/v1/channel/{channelID}/readers
-func (p *Plugin) HandleGetChannelReaders(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	channelID := vars["channelID"]
-	if channelID == "" {
-		http.Error(w, "Missing channel ID", http.StatusBadRequest)
-		return
-	}
-
-	userID := r.Header.Get("Mattermost-User-Id")
-	if userID == "" {
-		http.Error(w, "Unauthorized", http.StatusUnauthorized)
-		return
-	}
-
-	sinceMs, err := p.getSinceMillis(r)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
-
-	readers, err := p.store.GetReadersSince(channelID, sinceMs, userID)
-	if err != nil {
-		p.logError("[API] Failed to get channel readers",
-			"channel_id", channelID,
-			"since", sinceMs,
-			"error", err.Error())
-		http.Error(w, "Failed to get readers", http.StatusInternalServerError)
-		return
-	}
-
-	response := struct {
-		UserIDs []string `json:"user_ids"`
-	}{
-		UserIDs: readers,
-	}
-
-	w.Header().Set("Content-Type", "application/json")
-	if err := json.NewEncoder(w).Encode(response); err != nil {
-		http.Error(w, "Failed to encode response", http.StatusInternalServerError)
-		return
-	}
-}
-
-// HandleGetChannelReads returns all read receipts for a channel
 func (p *Plugin) HandleGetChannelReads(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	channelID := vars["channelID"]
-
-	if channelID == "" {
-		http.Error(w, "Missing channel_id", http.StatusBadRequest)
+	if !p.ready(w) {
 		return
 	}
-
-	userID := r.Header.Get("Mattermost-User-Id")
-	if userID == "" {
-		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+	channelID := mux.Vars(r)["channelID"]
+	if !p.allowed(w, r, channelID) {
 		return
 	}
-
-	p.logDebug("[API] Getting channel reads",
-		"channel_id", channelID,
-		"user_id", userID,
-	)
-
 	reads, err := p.store.GetChannelReads(channelID)
 	if err != nil {
-		p.logError("[API] Failed to get channel reads",
-			"channel_id", channelID,
-			"error", err.Error(),
-		)
-		http.Error(w, "Internal error", http.StatusInternalServerError)
+		http.Error(w, "Unable to load reads", 500)
 		return
 	}
-
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(reads)
-}
-
-// Helper function to resolve timestamp in milliseconds since epoch
-func (p *Plugin) getSinceMillis(r *http.Request) (int64, error) {
-	query := r.URL.Query()
-	sinceStr := query.Get("since")
-	if sinceStr != "" {
-		sinceMs, err := strconv.ParseInt(sinceStr, 10, 64)
-		if err != nil {
-			// Return an error if 'since' is provided but invalid
-			return 0, fmt.Errorf("invalid since parameter: %w", err)
-		}
-		return sinceMs, nil
+	if reads == nil {
+		writeJSON(w, []interface{}{})
+		return
 	}
-
-	postID := query.Get("postID")
-	if postID != "" {
-		post, err := p.API.GetPost(postID)
-		if err != nil {
-			// Return an error if 'postID' is provided but invalid
-			return 0, fmt.Errorf("invalid postID parameter: %w", err)
+	writeJSON(w, reads)
+}
+func (p *Plugin) readers(w http.ResponseWriter, r *http.Request, wrapped bool) {
+	if !p.ready(w) {
+		return
+	}
+	channelID := mux.Vars(r)["channelID"]
+	if !p.allowed(w, r, channelID) {
+		return
+	}
+	since, err := p.getSinceMillis(r)
+	if err != nil {
+		http.Error(w, err.Error(), 400)
+		return
+	}
+	readers, err := p.store.GetReadersSince(channelID, since, r.Header.Get("Mattermost-User-ID"))
+	if err != nil {
+		http.Error(w, "Unable to load readers", 500)
+		return
+	}
+	if readers == nil {
+		readers = []string{}
+	}
+	if wrapped {
+		writeJSON(w, map[string]interface{}{"user_ids": readers})
+	} else {
+		writeJSON(w, readers)
+	}
+}
+func (p *Plugin) HandleGetReadersSince(w http.ResponseWriter, r *http.Request) {
+	p.readers(w, r, false)
+}
+func (p *Plugin) HandleGetChannelReaders(w http.ResponseWriter, r *http.Request) {
+	p.readers(w, r, true)
+}
+func (p *Plugin) getSinceMillis(r *http.Request) (int64, error) {
+	if s := r.URL.Query().Get("since"); s != "" {
+		n, err := strconv.ParseInt(s, 10, 64)
+		if err != nil || n < 0 {
+			return 0, &parameterError{}
+		}
+		return n, nil
+	}
+	if id := r.URL.Query().Get("postID"); id != "" {
+		post, err := p.API.GetPost(id)
+		if err != nil || post.ChannelId != r.URL.Query().Get("channel_id") && post.ChannelId != mux.Vars(r)["channelID"] {
+			return 0, &parameterError{}
 		}
 		return post.CreateAt, nil
 	}
-
-	// If neither 'since' nor 'postID' is provided, default to 0 (fetch all/from beginning).
-	// Log this behavior for clarity during debugging.
-	// Using p.API.LogDebug directly as p.logDebug might not be accessible if p is nil in some contexts,
-	// though here it should be fine as it's a method on *Plugin.
-	// For safety, ensure p is not nil or use a global logger if available and appropriate.
-	// Assuming p is valid here as it's a plugin method.
-	p.API.LogDebug("[API] getSinceMillis: No 'since' or 'postID' query param provided, defaulting to 0 for fetching all readers.")
 	return 0, nil
 }
+
+type parameterError struct{}
+
+func (*parameterError) Error() string { return "Invalid since/postID parameter" }

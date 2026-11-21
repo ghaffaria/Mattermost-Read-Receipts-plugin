@@ -6,7 +6,7 @@ type ReadEvent struct {
 	MessageID string `json:"message_id"` // ID of the message
 	UserID    string `json:"user_id"`    // ID of the user who read the message
 	ChannelID string `json:"channel_id"` // ID of the channel where the message was sent
-	Timestamp int64  `json:"timestamp"`  // Unix timestamp (seconds) of when the message was read
+	Timestamp int64  `json:"timestamp"`  // Unix timestamp (milliseconds) of when the message was read
 }
 
 // ReadRequest represents the JSON payload for the read receipt API.

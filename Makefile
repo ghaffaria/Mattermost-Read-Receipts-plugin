@@ -1,39 +1,22 @@
-# Makefile
-PLUGIN_ID = mattermost-readreceipts
-PLUGIN_VERSION = $(shell date +"%Y.%m.%d.%H%M")
-OUTPUT_DIR = dist
-PLUGIN_BUNDLE = $(OUTPUT_DIR)/$(PLUGIN_ID)-$(PLUGIN_VERSION).tar.gz
+.PHONY: dist clean build-server build-webapp test
 
-.PHONY: dist clean build-server build-webapp
-
-dist: clean build-webapp build-server
-	@echo "Building plugin bundle (multi-arch)..."
-	mkdir -p $(OUTPUT_DIR)
-	cp plugin.json $(OUTPUT_DIR)/
-	cp webapp/dist/main.js $(OUTPUT_DIR)/
-	cp server/dist/plugin-linux-amd64 $(OUTPUT_DIR)/
-	cp server/dist/plugin-linux-arm64 $(OUTPUT_DIR)/
-	tar -czf $(PLUGIN_BUNDLE) -C $(OUTPUT_DIR) plugin.json main.js plugin-linux-amd64 plugin-linux-arm64
-	@echo "✅ Plugin bundle created at $(PLUGIN_BUNDLE)"
-
-clean:
-	@echo "Cleaning all output directories..."
-	rm -rf $(OUTPUT_DIR)/*
-	rm -rf server/dist/*
-	rm -rf webapp/dist/*
+dist: build-webapp build-server
+	python3 build/package.py
 
 build-webapp:
-	@echo "Building webapp (webpack build)..."
-	cd webapp && npm run build
+	cd webapp && npm run check-types && npm run build
 
-build-server: build-server-amd64 build-server-arm64
+build-server:
+	mkdir -p .build
+	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -trimpath -buildvcs=false -o .build/plugin-linux-amd64 ./server
+	CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -trimpath -buildvcs=false -o .build/plugin-linux-arm64 ./server
+	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -trimpath -buildvcs=false -o .build/healthcheck-linux-amd64 ./build/healthcheck
+	CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -trimpath -buildvcs=false -o .build/healthcheck-linux-arm64 ./build/healthcheck
 
-build-server-amd64:
-	@echo "Building server binary (plugin-linux-amd64)..."
-	cd server && mkdir -p dist && GOOS=linux GOARCH=amd64 go build -o dist/plugin-linux-amd64
-	@echo "✅ Server binary built at server/dist/plugin-linux-amd64"
+test:
+	go test -race ./...
+	cd webapp && npm test && npm run check-types
 
-build-server-arm64:
-	@echo "Building server binary (plugin-linux-arm64)..."
-	cd server && mkdir -p dist && GOOS=linux GOARCH=arm64 go build -o dist/plugin-linux-arm64
-	@echo "✅ Server binary built at server/dist/plugin-linux-arm64"
+# Historical releases and mounted runtime artifacts are deliberately preserved.
+clean:
+	rm -rf .build webapp/dist

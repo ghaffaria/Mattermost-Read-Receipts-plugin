@@ -1,0 +1,66 @@
+{
+  "schema_version": 1,
+  "version": "2.46.0-rr.1",
+  "upstream_repository": "https://github.com/mattermost/mattermost-mobile.git",
+  "upstream_tag": "v2.46.0",
+  "upstream_commit": "655df13b131da6810f4f073622c925af1b87c3fb",
+  "latest_stable_verified_on": "2026-11-21",
+  "source_patch": "read-receipts-2.46.0-rr.1.patch",
+  "source_patch_sha256": "65b91044e80fe6d7f71a049a7a34359a26ff2234ffc38cf7168c992d51ee0515",
+  "source_files": "source-files.json",
+  "application_id": "com.pardis.mattermost.readreceipts.qa",
+  "version_code": 836,
+  "apk": "../../dist/mattermost-read-receipts-android-2.46.0-rr.1-arm64-v8a.apk",
+  "apk_sha256": "102b79adfbe80ef277b5ec78f3911bd6dc27ddc6ce6f5af3679039c9f8855126",
+  "apk_bytes": 141098663,
+  "signer_certificate_sha256": "d0895b278888c3cf97d4c61ae2252baed43946cce24f686446fdd4e51a039a05",
+  "vendor_signed": false,
+  "debuggable": false,
+  "min_sdk": 30,
+  "target_sdk": 36,
+  "architectures": [
+    "arm64-v8a"
+  ],
+  "plugin": {
+    "id": "mattermost-readreceipts",
+    "version": "1.1.1",
+    "archive": "../../dist/mattermost-readreceipts-1.1.1.tar.gz",
+    "sha256": "ca9583b251f737639f03475f2212a3d63a29d32a049e6ec0b9bc5667c918e08a"
+  },
+  "build": {
+    "jdk": "AmazonCorretto17.0.21.1",
+    "gradle": "9.0.0",
+    "ndk": "27.1.12297006",
+    "cmake": "3.22.1",
+    "sdk_platform": 36,
+    "build_tools": [
+      "36.0.0",
+      "35.0.0"
+    ],
+    "npm_major": 11,
+    "existing_sdk_license_unchanged": true
+  },
+  "push": "Unconfigured custom Firebase; not qualified",
+  "qa_status": "PASS_LOCAL_SEEN_ACCEPTANCE",
+  "production_changes": false,
+  "embedded_bundle_sha256": "c6fca94122cf3c8fafd9effe534e640b26145aac07141e06f8dd4ff40e82836a",
+  "source_reproduction": "39 changed files applied to clean official pinned upstream; exact file hashes match C4 build snapshot",
+  "candidate": 4,
+  "qa_report": "../../docs/VALIDATION.md",
+  "qa_evidence": "../../docs/VALIDATION.md",
+  "automated_validation": {
+    "jest_suites": 13,
+    "jest_tests_passed": 154,
+    "sdk_tests_passed": 61,
+    "native_jvm_tests_passed": 8,
+    "typescript": "PASS",
+    "npm_run_fix_on_identical_prepared_source": "PASS; no delivered file drift"
+  },
+  "source_checkout_head": "d18da5617f05aff6e7fd6bc285a9bbb72cadf81e",
+  "runtime_scope": "Two Android16/API36arm64 emulators; EE12.0.1/schema234/PostgreSQL17.12; installedMac6.3.2; local only",
+  "production_qualified": false,
+  "qa_exceptions": [
+    "One raw unseen expectation invalid because message was fully visible above inline emoji keyboard; failed observation retained",
+    "One recovered browser group Loading/navigation timeout; original results and recovery retained"
+  ]
+}

@@ -1,33 +1,11 @@
-# Node.js dependencies
-/node_modules
-
-# Build output
-/webapp/dist
-
-# OS-specific files
-.DS_Store
-
-# Go build artifacts
-/bin/
-/pkg/
-
-# Logs
+.local/
+.env
 *.log
-
-# IDE-specific files
-.idea/
-.vscode/
-
-webapp/node_modules
-
-
-
-
-*.txt
-*.sh
-*.html
-
-/old-plan/*
-/plan/*
-/log-test/*
-/log/*
+.DS_Store
+node_modules/
+webapp/dist/
+.build/
+dist/
+*.apk
+*.jks
+*.keystore

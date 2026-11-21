@@ -1,7 +1,10 @@
+//go:build integration_mysql
+
 package store
 
 import (
 	"database/sql"
+	"os"
 	"testing"
 	"time"
 
@@ -13,7 +16,10 @@ import (
 
 func setupMySQLTestStore(t *testing.T) *MySQLStore {
 	// Use environment variables for connection details in CI/CD
-	dsn := "root:rootpass@tcp(localhost:3307)/read_receipts_test?parseTime=true&multiStatements=true"
+	dsn := os.Getenv("RR_MYSQL_TEST_DSN")
+	if dsn == "" {
+		t.Skip("RR_MYSQL_TEST_DSN must point to a disposable test database")
+	}
 	db, err := sql.Open("mysql", dsn)
 	require.NoError(t, err)
 	require.NoError(t, db.Ping())
@@ -24,6 +30,7 @@ func setupMySQLTestStore(t *testing.T) *MySQLStore {
 
 	store := NewMySQLStore(db)
 	require.NoError(t, store.Initialize())
+	require.NoError(t, store.InitializeChannelReads())
 	return store
 }
 
@@ -34,7 +41,8 @@ func TestMySQLStore(t *testing.T) {
 		event := ReadEvent{
 			MessageID: "channel1:msg1",
 			UserID:    "user1",
-			Timestamp: time.Now().Unix(),
+			Timestamp: time.Now().UnixMilli(),
+			ChannelID: "channel1",
 		}
 
 		// Test insert
@@ -50,7 +58,7 @@ func TestMySQLStore(t *testing.T) {
 		assert.Equal(t, event.Timestamp, events[0].Timestamp)
 
 		// Test update (upsert with same message_id and user_id)
-		event.Timestamp = time.Now().Unix()
+		event.Timestamp = time.Now().UnixMilli()
 		err = store.Upsert(event)
 		require.NoError(t, err)
 
@@ -68,12 +76,14 @@ func TestMySQLStore(t *testing.T) {
 		oldEvent := ReadEvent{
 			MessageID: "channel1:msg2",
 			UserID:    "user1",
-			Timestamp: time.Now().AddDate(0, 0, -31).Unix(), // 31 days old
+			Timestamp: time.Now().AddDate(0, 0, -31).UnixMilli(),
+			ChannelID: "channel1", // 31 days old
 		}
 		newEvent := ReadEvent{
 			MessageID: "channel1:msg3",
 			UserID:    "user1",
-			Timestamp: time.Now().Unix(),
+			Timestamp: time.Now().UnixMilli(),
+			ChannelID: "channel1",
 		}
 
 		require.NoError(t, store.Upsert(oldEvent))

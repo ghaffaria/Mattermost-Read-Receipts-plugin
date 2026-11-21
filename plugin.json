@@ -2,10 +2,9 @@
   "manifest_version": 2,
   "id": "mattermost-readreceipts",
   "name": "Read Receipts",
-  "description": "WhatsApp/Telegram-style read receipts for Mattermost posts.With Alireza Ghaffari(ARG)",
-  "version": "1.0.0",
-  "min_server_version": "6.0.0",
-
+  "description": "Explicit per-message read receipts with continuous visibility tracking.",
+  "version": "1.1.1",
+  "min_server_version": "9.5.0",
   "server": {
     "executables": {
       "linux-amd64": "plugin-linux-amd64",
@@ -15,7 +14,6 @@
   "webapp": {
     "bundle_path": "main.js"
   },
-
   "settings_schema": {
     "settings": [
       {
@@ -38,6 +36,13 @@
         "type": "number",
         "help_text": "Number of days to retain read receipts in the database",
         "default": 30
+      },
+      {
+        "key": "EnableCleanup",
+        "display_name": "Enable automatic receipt cleanup",
+        "type": "bool",
+        "default": false,
+        "help_text": "Opt in to hourly deletion according to RetentionDays. Disabled by default to preserve history."
       },
       {
         "key": "LogLevel",
