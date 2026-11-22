@@ -64,7 +64,7 @@ The isolated lab used **Mattermost Enterprise 12.0.1**, build **39742891057**, d
 - **Selective readers:** earlier five-member Android/web/Mac fixtures verified different reader subsets for different messages. These results are separate from the later two-client Windows exercise.
 - **Automated checks:** plugin source Go race tests, 13 web tests and TypeScript checks passed for the licensing/attribution release. Native Android validation is documented separately.
 
-Most live UI evidence used plugin **1.1.1**. Version **1.1.2** adds licensing, developer attribution, packaging notices and the activation version log; receipt logic is unchanged. Full live UI coverage was not repeated for that metadata release. Physical Android devices, other Android API levels, iOS, HA/load and production Enterprise Advanced policies are not certified. **No production deployment was performed.** See [complete validation and retained exceptions](docs/VALIDATION.md).
+Most live UI evidence used plugin **1.1.1**. Version **1.1.2** adds licensing, developer attribution, packaging notices and the activation version log; receipt logic is unchanged. Full live UI coverage was not repeated for that metadata release. Physical Android devices, other Android API levels, iOS, HA/load and production Enterprise Advanced policies are not certified. **Production use:** on 2026-11-22, the maintainer reported successful installation and operation in the company production environment. This is maintainer-reported operational acceptance, separate from the independently recorded lab tests; it does not certify every production topology or policy. See [complete validation and retained exceptions](docs/VALIDATION.md).
 
 ## Screenshots
 
@@ -123,10 +123,10 @@ No. Seen records the visibility condition. A deliberate acknowledgement is a dif
 
 ### Can this repository appear in Google search?
 
-The repository is currently private. Its documentation is prepared for public discovery, but private content is not publicly crawlable. Public availability and search-engine indexing are separate decisions, and no search ranking is promised.
+The repository is now public, so its documentation and release pages are publicly accessible. Search engines decide when to crawl and index them; no indexing date or search ranking is promised.
 
 ## License and source availability
 
 Original project code is licensed under [Mozilla Public License 2.0](LICENSE). [Licensing scope](LICENSING.md) explains third-party boundaries and the unchanged Android patch/APK licensing. Plugin 1.1.2 contains **Developed by Alireza Ghaffari** and a clickable profile link in its settings. Dependency notices are preserved.
 
-Binary recipients must have access to the corresponding covered source; a source archive accompanies the plugin release. The repository remains private until its owner chooses otherwise. Historical releases and original test evidence are retained; this documentation update does not rebuild the plugin or APK.
+Binary recipients must have access to the corresponding covered source; a source archive accompanies the plugin release. The repository and corresponding source are public. Historical releases and original test evidence are retained; this documentation update does not rebuild the plugin or APK.
