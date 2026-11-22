@@ -14,6 +14,10 @@ shasum -a 256 -c SHA256SUMS
 
 Download all files listed in that checksum file into the same directory before running the command. The Linux binaries inside the plugin run on the Mattermost server; Windows and macOS desktop clients receive the web component from that server.
 
+### Production incident clarification
+
+On 2026-11-22, the maintainer reported that the original production incident (missing Seen lists in the desktop client) was resolved by logging out and logging back in once while the previous plugin version was still installed. Version 1.1.3 had not been deployed at the time of that report. **The resolution of that incident must not be attributed to 1.1.3.** The precise production root cause remains unconfirmed; the laboratory RPC findings are separate evidence. Installing 1.1.3 is an upgrade for the documented packaging and lab-tested recovery improvements, not a prerequisite for the already-reported production recovery.
+
 ## 2. Record and back up the current deployment
 
 Record the Mattermost server build, database version/schema, current plugin ID/version, enabled state and settings. Preserve the installed plugin package so that an application rollback has a known target.

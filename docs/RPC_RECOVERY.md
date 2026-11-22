@@ -2,11 +2,15 @@
 
 Release **1.1.3** includes the lab-validated packaging and recovery changes described here. Publication is separate from deployment: this work did not deploy to or test production. The existing Android APK is unchanged.
 
-## Findings and scope
+## Production incident clarification
 
-The observed host log contains `yamux: keepalive failed: i/o deadline reached` before `plugin RPC connection is not responding`. A long pause of the plugin process reproduces this sequence. Once the transport is closed, resuming that same process does not repair the RPC session; Mattermost must start a new plugin process.
+On 2026-11-22, the maintainer reported that the original production incident (missing Seen lists in the desktop client) was resolved by logging out and logging back in once while the previous plugin version was still installed. Version 1.1.3 had not been deployed at the time of that report. **The resolution of that incident must not be attributed to 1.1.3.** The precise production root cause remains unconfirmed; the laboratory RPC findings are separate evidence. This documentation update does not report a production deployment or test.
 
-The exact scheduler or VM event behind the original unplanned pause was not captured. A later same-version reinstall and an ordered shutdown of the other local lab did not reproduce it. The controlled pause establishes the failure and recovery path, not that every RPC failure has the same external trigger.
+## Laboratory findings and scope
+
+The observed laboratory host log contains `yamux: keepalive failed: i/o deadline reached` before `plugin RPC connection is not responding`. A long pause of the plugin process reproduces this sequence. Once the transport is closed, resuming that same process does not repair the RPC session; Mattermost must start a new plugin process.
+
+The exact scheduler or VM event behind the unplanned laboratory pause was not captured. A later same-version reinstall and an ordered shutdown of the other local lab did not reproduce it. The controlled pause establishes the failure and recovery path, not that every RPC failure has the same external trigger.
 
 Two recovery amplifiers were identified:
 

@@ -1,10 +1,14 @@
 # Validation — 1.1.3 (2026-11-22)
 
+## Production incident clarification
+
+On 2026-11-22, the maintainer reported that the original production incident (missing Seen lists in the desktop client) was resolved by logging out and logging back in once while the previous plugin version was still installed. Version 1.1.3 had not been deployed at the time of that report. **The resolution of that incident must not be attributed to 1.1.3.** The precise production root cause remains unconfirmed; the laboratory RPC findings are separate evidence. This operator-reported recovery is not a production validation of 1.1.3 or proof of the incident's root cause.
+
 ## Release validation and boundaries
 
 The 1.1.3 distribution preserves the receipt protocol and Android APK. Go race tests, 13 web-controller/visibility tests, TypeScript checks, four package tests, four lab-installer tests and one source-export boundary test passed. The source archive includes the explicitly curated public docs/evidence and unchanged mobile reproduction manifests; private local evidence, credentials, keys and database snapshots are excluded.
 
-RPC failure/recovery was exercised on 1.1.3-rc.1 by intentionally pausing the plugin process. The observed health-check-failure-to-reactivation interval decreased from 14.885 seconds on 1.1.2 to 0.401 seconds on the candidate. These are single controlled observations in the local Docker Desktop lab, not a production benchmark. The external trigger of the original unplanned pause was not captured. See [RPC findings and recovery scope](RPC_RECOVERY.md).
+RPC failure/recovery was exercised on 1.1.3-rc.1 by intentionally pausing the plugin process. The observed health-check-failure-to-reactivation interval decreased from 14.885 seconds on 1.1.2 to 0.401 seconds on the candidate. These are single controlled observations in the local Docker Desktop lab, not a production benchmark. The external trigger of the unplanned laboratory pause was not captured. See [RPC findings and recovery scope](RPC_RECOVERY.md).
 
 The final 1.1.3 package was also tested in the isolated Enterprise 12.0.1/build 39742891057/schema 234/PostgreSQL 17.12 lab. The installed macOS Desktop 6.3.2/build 408386646761 used a dedicated profile containing only local staging servers on ports 18065 and 19065. The source server was Team Edition 12.1.0. Browser tests used the existing Playwright installation because the Browser plugin was unavailable.
 

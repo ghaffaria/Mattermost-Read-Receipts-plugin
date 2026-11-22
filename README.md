@@ -62,7 +62,7 @@ The Android app is based on Mattermost Mobile **v2.46.0**, commit `655df13b131da
 - Ping responses and activation logs now report the actual plugin version. The package and source-export tests check the distribution boundary and exclude private local evidence and credentials.
 - The web-only conversation → desktop login/server-switch scenario passed in the isolated lab. The Android APK and mobile source are unchanged.
 
-See [release notes](docs/CHANGELOG.md), [RPC recovery findings and limitations](docs/RPC_RECOVERY.md), and [validation](docs/VALIDATION.md). This release improves recovery after a transport timeout; it does not prevent an operating system from suspending a process and does not establish the original production issue's cause.
+See [release notes](docs/CHANGELOG.md), [RPC recovery findings and limitations](docs/RPC_RECOVERY.md), and [validation](docs/VALIDATION.md). This release improves the lab-tested recovery path after a transport timeout; it does not prevent an operating system from suspending a process. The production incident was resolved on the previous plugin by logout/login, as clarified below.
 
 ## Compatibility and validation
 
@@ -75,7 +75,7 @@ The isolated lab used **Mattermost Enterprise 12.0.1**, build **39742891057**, d
 
 Historical Android/Windows visibility tests used plugin **1.1.1**. Version **1.1.2** added licensing and developer attribution. Version **1.1.3** was validated for RPC recovery and web-only conversations displayed after login and server switching in macOS Desktop **6.3.2**, build **408386646761**, using a dedicated lab-only profile. These newer tests do not expand the historical Android or Windows coverage. Physical Android devices, other Android API levels, iOS, HA/load and production Enterprise Advanced policies are not certified.
 
-**Production history:** on 2026-11-22, the maintainer reported successful company production operation of the earlier plugin. That is maintainer-reported history, separate from independent lab evidence. Publishing **1.1.3** does not deploy it to production; no production deployment or validation of **1.1.3** was performed here. See [validation and retained exceptions](docs/VALIDATION.md).
+**Production incident clarification:** On 2026-11-22, the maintainer reported that the original production incident (missing Seen lists in the desktop client) was resolved by logging out and logging back in once while the previous plugin version was still installed. Version 1.1.3 had not been deployed at the time of that report. **The resolution of that incident must not be attributed to 1.1.3.** The precise production root cause remains unconfirmed; the laboratory RPC findings are separate evidence. This is an operator-reported outcome, not an independent production test. No production deployment or validation of **1.1.3** was performed here. See [validation and retained exceptions](docs/VALIDATION.md).
 
 ## Screenshots
 
