@@ -114,7 +114,7 @@ func (p *Plugin) OnActivate() error {
 	p.stopCh = make(chan struct{})
 	p.workers.Add(1)
 	go p.runMaintenance(p.stopCh, db)
-	p.API.LogInfo("Read Receipts activated", "version", "1.1.2")
+	p.API.LogInfo("Read Receipts activated", "version", pluginVersion)
 	return nil
 }
 

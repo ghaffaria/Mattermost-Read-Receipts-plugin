@@ -9,6 +9,7 @@ The plugin separates three concerns: observing message visibility in a client, a
 | Mattermost server plugin | `server/` | Authenticate requests, check channel access, persist receipts and publish live updates |
 | Web/desktop client | `webapp/` | Observe focused conversation/message visibility and render Seen indicators |
 | Derived Android client | `mobile/android/` | Pinned upstream patch, preparation script and source verification metadata |
+| Lab maintenance | `ops/` | Coordinate local test installations with host RPC recovery; refuse non-lab destinations |
 | Build and licensing | `build/` | Compile server architectures, build the web bundle and include legal/source notices |
 
 The same web plugin is loaded by browsers and official Windows/macOS desktop apps. The Android client implements the receipt protocol in its native message lists. It is distributed separately from the official app.
@@ -37,6 +38,12 @@ Repeated reads preserve the original timestamp. Cleanup is explicitly opt-in; th
 The web controller combines active-document visibility, document focus, conversation context and rendered message geometry. Its isolated DOM adapter handles channel and thread displays. Separate copies of the same post in the channel and thread pane must not cancel a valid visible copy or generate duplicate writes.
 
 The continuous clock is reset when reading attention is lost. This protects against false Seen caused by an open but unfocused or minimized desktop webview. Platform-specific behavior still requires client tests; [Windows validation](WINDOWS.md) records both observed cases and remaining coverage limits.
+
+## Packaging and RPC recovery
+
+The web entry point is `webapp/main.js` inside the plugin archive. Mattermost publishes the entire containing directory; keeping only browser assets there avoids copying backend executables during activation. Linux amd64 and arm64 executables remain at the archive root.
+
+An expired internal RPC keepalive closes the transport. Automatic host recovery must create a new plugin process. The lab installer drains the host health-check job before a manual upload to avoid overlapping activation, then restores the previous setting. This maintenance behavior is external to receipt creation and does not change authorization or database semantics. See [RPC recovery scope and measured results](RPC_RECOVERY.md).
 
 ## Android viewport and lifecycle
 

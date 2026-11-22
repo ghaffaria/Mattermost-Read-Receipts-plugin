@@ -2,7 +2,7 @@
 
 The derived Android app implements the explicit per-message visibility protocol used by this plugin. It is based on official Mattermost Mobile **v2.46.0**, pinned to commit `655df13b131da6810f4f073622c925af1b87c3fb`.
 
-Release **2.46.0-rr.1** uses application ID `com.pardis.mattermost.readreceipts.qa`. It installs alongside the vendor app and does not reuse or clear its data. Subsequent plugin licensing/documentation updates do not change this APK.
+Release **2.46.0-rr.1** uses application ID `com.pardis.mattermost.readreceipts.qa`. It installs alongside the vendor app and does not reuse or clear its data. Plugin **1.1.3** does not rebuild, replace or re-sign this APK. Its existing release and checksum remain unchanged; Android was not requalified in the 1.1.3 RPC-recovery tests.
 
 ## Prerequisites
 

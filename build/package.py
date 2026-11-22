@@ -13,13 +13,19 @@ version=json.loads((root/"plugin.json").read_text())["version"]
 dest=root/"dist"/("mattermost-readreceipts-"+version+".tar.gz")
 dest.parent.mkdir(exist_ok=True)
 subprocess.run([sys.executable, str(root/"build/licensing.py")], check=True)
-sources = [(root/"plugin.json", "plugin.json"), (root/"webapp/dist/main.js", "main.js"), (root/".build/plugin-linux-amd64", "plugin-linux-amd64"), (root/".build/plugin-linux-arm64", "plugin-linux-arm64")]
+subprocess.run([sys.executable, str(root/"build/source.py")], check=True)
+# Mattermost publishes the entire parent directory of bundle_path. Keep that
+# directory limited to browser assets, including during health-check restarts.
+bundle_path = json.loads((root/"plugin.json").read_text())["webapp"]["bundle_path"]
+if bundle_path != "webapp/main.js":
+    raise SystemExit("Expected isolated webapp/main.js bundle_path")
+sources = [(root/"plugin.json", "plugin.json"), (root/"webapp/dist/main.js", bundle_path), (root/".build/plugin-linux-amd64", "plugin-linux-amd64"), (root/".build/plugin-linux-arm64", "plugin-linux-arm64")]
 for name in ("LICENSE", "NOTICE", "LICENSING.md", "SOURCE_CODE.txt", "THIRD_PARTY_NOTICES.txt"):
     sources.append((root/name, name))
 for source in sorted((root/"licenses").rglob("*")):
     if source.is_file(): sources.append((source, str(source.relative_to(root))))
 for source in sorted((root/"webapp/dist").glob("*.LICENSE.txt")):
-    sources.append((source, source.name))
+    sources.append((source, "webapp/" + source.name))
 with dest.open("wb") as raw:
     with gzip.GzipFile(fileobj=raw,mode="wb",mtime=0) as compressed:
         with tarfile.open(fileobj=compressed,mode="w") as archive:

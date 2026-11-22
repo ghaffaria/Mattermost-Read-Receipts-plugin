@@ -4,7 +4,7 @@ This guide covers the server plugin, supported web/desktop clients and the separ
 
 ## 1. Choose the right release files
 
-Use [plugin 1.1.2](https://github.com/ghaffaria/Mattermost-Read-Receipts-plugin/releases/tag/v1.1.2) for the current MPL-2.0 and developer-attribution package. Its assets include the plugin archive, corresponding source archive and `SHA256SUMS`. Obtain the unchanged Android APK from the [Android 2.46.0-rr.1 release](https://github.com/ghaffaria/Mattermost-Read-Receipts-plugin/releases/tag/v1.1.1-android-2.46.0-rr.1).
+Use [plugin 1.1.3](https://github.com/ghaffaria/Mattermost-Read-Receipts-plugin/releases/tag/v1.1.3) for the current RPC-recovery and packaging update. Its assets include the plugin archive, corresponding source archive and `SHA256SUMS`. Obtain the unchanged Android APK from the [Android 2.46.0-rr.1 release](https://github.com/ghaffaria/Mattermost-Read-Receipts-plugin/releases/tag/v1.1.1-android-2.46.0-rr.1).
 
 Verify each file against the checksum file from the same release:
 
@@ -24,7 +24,7 @@ Plugin retention cleanup is disabled by default. Keep it disabled during an upgr
 
 ## 3. Upload and enable the plugin
 
-In Mattermost System Console, open plugin management, upload `mattermost-readreceipts-1.1.2.tar.gz`, and enable Read Receipts. Server policy must permit plugin installation. Review plugin logs and confirm the activated version.
+In Mattermost System Console, open plugin management, upload `mattermost-readreceipts-1.1.3.tar.gz`, and enable Read Receipts. Server policy must permit plugin installation. Review plugin logs and confirm the activated version.
 
 In plugin settings, verify the developer credit and GitHub link, then review:
 
@@ -38,6 +38,14 @@ In plugin settings, verify the developer credit and GitHub link, then review:
 
 Explain the read-receipt behavior to users. The implementation does not claim WhatsApp-style per-user opt-out controls. A recorded Seen status is not a manual acknowledgement of an instruction.
 
+### Coordinate upgrades with host recovery
+
+Wait for an in-progress automatic plugin restart before attempting a manual enable/disable or upload. The Mattermost 12.0.1 host's automatic and manual activation paths can otherwise overlap on the same client directory. A transport timeout is a reason to inspect the host/plugin logs and current state, not to issue repeated concurrent recovery commands.
+
+For the specific loopback lab on port 19065, `ops/install_lab_plugin.py` drains the health-check job before upload, restores its original setting in `finally`, and verifies runtime version **1.1.3**. It refuses other destinations and redirects. It is not a production installer, and the package itself does not disable health checks. See [RPC recovery](RPC_RECOVERY.md).
+
+The 1.1.3 manifest points to `webapp/main.js`; backend executable names are unchanged. Install the complete archive through supported plugin management rather than manually mixing old and new client files. Reload a web/desktop view when needed to load the current server-supplied bundle; a reload alone is not acceptance evidence.
+
 ## 4. Run acceptance tests with separate accounts
 
 Use at least a sender and a reader; add more accounts for selective-reader tests.
@@ -48,7 +56,8 @@ Use at least a sender and a reader; add more accounts for selective-reader tests
 4. Repeat in a private channel and verify that a non-member cannot obtain or write receipts.
 5. Keep a parent message visible while its thread is closed. Confirm a new reply remains unseen; open the thread and verify that reply separately.
 6. Minimize the desktop app, send another target, and confirm no receipt until restoration and viewing.
-7. Test both client directions and several reader subsets. Reopening a message must not replace the original first-read timestamp.
+7. Send a conversation entirely in web while the author is signed out of the desktop target server. Log the desktop author out of another staging server, select the target, log in, and verify the same existing reader list without a page reload.
+8. Test both client directions and several reader subsets. Reopening a message must not replace the original first-read timestamp.
 
 Repeat through the actual reverse proxy and TLS endpoint, including a genuine disconnection/reconnection. Compare [documented validation](VALIDATION.md) with your own version and topology rather than assuming those results certify an untested environment.
 

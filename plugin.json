@@ -3,7 +3,7 @@
   "id": "mattermost-readreceipts",
   "name": "Read Receipts",
   "description": "Explicit per-message read receipts with continuous visibility tracking. Developed by Alireza Ghaffari.",
-  "version": "1.1.2",
+  "version": "1.1.3",
   "min_server_version": "9.5.0",
   "server": {
     "executables": {
@@ -12,7 +12,7 @@
     }
   },
   "webapp": {
-    "bundle_path": "main.js"
+    "bundle_path": "webapp/main.js"
   },
   "settings_schema": {
     "settings": [

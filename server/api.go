@@ -68,7 +68,7 @@ func (p *Plugin) ready(w http.ResponseWriter) bool {
 	return true
 }
 func (p *Plugin) HandlePing(w http.ResponseWriter, r *http.Request) {
-	writeJSON(w, map[string]string{"status": "ok", "version": "1.1.1"})
+	writeJSON(w, map[string]string{"status": "ok", "version": pluginVersion})
 }
 func (p *Plugin) HandleDBCheck(w http.ResponseWriter, r *http.Request) {
 	if !p.API.HasPermissionTo(r.Header.Get("Mattermost-User-ID"), model.PermissionManageSystem) {

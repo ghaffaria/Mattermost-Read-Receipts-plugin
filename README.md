@@ -4,7 +4,7 @@ Add automatic **read receipts**, **double-check Seen indicators**, and **per-mes
 
 The familiar idea is the same one people associate with Telegram and WhatsApp: a visible check-mark indicator answers “Has this message been seen?” This plugin displays **✓✓ Seen by …** using reader identities confirmed by the server. It is an independent Mattermost extension, not a WhatsApp or Telegram integration, and does not reproduce every delivery state, color, privacy setting or group-chat rule of those products.
 
-[Download plugin](https://github.com/ghaffaria/Mattermost-Read-Receipts-plugin/releases/tag/v1.1.2) · [Android APK](https://github.com/ghaffaria/Mattermost-Read-Receipts-plugin/releases/tag/v1.1.1-android-2.46.0-rr.1) · [Installation](docs/INSTALLATION.md) · [Architecture](docs/ARCHITECTURE.md) · [Test results](docs/VALIDATION.md) · [Windows validation](docs/WINDOWS.md) · [MPL-2.0](LICENSE)
+[Download plugin](https://github.com/ghaffaria/Mattermost-Read-Receipts-plugin/releases/tag/v1.1.3) · [Android APK](https://github.com/ghaffaria/Mattermost-Read-Receipts-plugin/releases/tag/v1.1.1-android-2.46.0-rr.1) · [Installation](docs/INSTALLATION.md) · [Architecture](docs/ARCHITECTURE.md) · [Test results](docs/VALIDATION.md) · [Windows validation](docs/WINDOWS.md) · [MPL-2.0](LICENSE)
 
 ## Why add read receipts to Mattermost?
 
@@ -42,18 +42,27 @@ Seen is an observation of client visibility, not proof of comprehension, agreeme
 
 ## Downloads and supported clients
 
-Current plugin release: **1.1.2**. Compatible derived Android release: **2.46.0-rr.1**.
+Current plugin release: **1.1.3**. Compatible derived Android release: **2.46.0-rr.1**.
 
 | Download | Purpose |
 |---|---|
-| [mattermost-readreceipts-1.1.2.tar.gz](https://github.com/ghaffaria/Mattermost-Read-Receipts-plugin/releases/download/v1.1.2/mattermost-readreceipts-1.1.2.tar.gz) | Server plugin for Linux amd64 and arm64; includes web client bundle and license notices |
-| [Corresponding plugin source](https://github.com/ghaffaria/Mattermost-Read-Receipts-plugin/releases/download/v1.1.2/mattermost-readreceipts-1.1.2-source.tar.gz) | Source accompanying the MPL-covered plugin release |
+| [mattermost-readreceipts-1.1.3.tar.gz](https://github.com/ghaffaria/Mattermost-Read-Receipts-plugin/releases/download/v1.1.3/mattermost-readreceipts-1.1.3.tar.gz) | Server plugin for Linux amd64 and arm64; includes web client bundle and license notices |
+| [Corresponding plugin source](https://github.com/ghaffaria/Mattermost-Read-Receipts-plugin/releases/download/v1.1.3/mattermost-readreceipts-1.1.3-source.tar.gz) | Source accompanying the MPL-covered plugin release |
 | [Android APK release](https://github.com/ghaffaria/Mattermost-Read-Receipts-plugin/releases/tag/v1.1.1-android-2.46.0-rr.1) | Separately installed arm64 Android QA app implementing the custom receipt protocol |
 | `SHA256SUMS` in each release | Integrity verification for that release's downloads |
 
 Web browsers and the official Windows/macOS desktop apps use the server-provided web plugin. No custom Windows or Mac executable is needed for this feature. For Android, use the derived client: the unchanged official mobile app does not implement this plugin's explicit visibility protocol.
 
 The Android app is based on Mattermost Mobile **v2.46.0**, commit `655df13b131da6810f4f073622c925af1b87c3fb`. Package `com.pardis.mattermost.readreceipts.qa` installs alongside the official app and uses a separate login and app data. It is QA-signed, arm64, minimum Android API 30 and target API 36. **Custom Firebase/HPNS push is not configured or qualified.** [Android build and installation](docs/ANDROID.md).
+
+## Changes in 1.1.3
+
+- Browser assets are isolated under `webapp/main.js`. Mattermost no longer copies both server executables and all notices into its public client directory during activation or automatic recovery.
+- A loopback-only lab installer coordinates uploads with the host health-check job, verifies the running version, and restores the original health-check setting even on failure. It is a lab maintenance tool, not a production deployment tool.
+- Ping responses and activation logs now report the actual plugin version. The package and source-export tests check the distribution boundary and exclude private local evidence and credentials.
+- The web-only conversation → desktop login/server-switch scenario passed in the isolated lab. The Android APK and mobile source are unchanged.
+
+See [release notes](docs/CHANGELOG.md), [RPC recovery findings and limitations](docs/RPC_RECOVERY.md), and [validation](docs/VALIDATION.md). This release improves recovery after a transport timeout; it does not prevent an operating system from suspending a process and does not establish the original production issue's cause.
 
 ## Compatibility and validation
 
@@ -62,9 +71,11 @@ The isolated lab used **Mattermost Enterprise 12.0.1**, build **39742891057**, d
 - **Windows desktop ↔ web:** official Windows app in UTM; public/private channel messages, offscreen scroll, minimize/restore and closed/open private-thread replies passed the documented tests. Reverse-direction messages had valid web-reader receipts. Exact Windows and desktop app versions were not recorded. [Evidence and boundaries](docs/WINDOWS.md).
 - **macOS desktop, web and Android:** installed Mac desktop **6.3.2** and two Android 16/API 36 arm64 emulators. Android-to-Android, Android-to-web and Android-to-Mac communication were tested in both directions.
 - **Selective readers:** earlier five-member Android/web/Mac fixtures verified different reader subsets for different messages. These results are separate from the later two-client Windows exercise.
-- **Automated checks:** plugin source Go race tests, 13 web tests and TypeScript checks passed for the licensing/attribution release. Native Android validation is documented separately.
+- **Automated checks:** Go race tests, 13 frontend tests, TypeScript checking, four package tests, four lab-installer tests and one source-export boundary test passed. Native Android results remain the separately documented earlier tests.
 
-Most live UI evidence used plugin **1.1.1**. Version **1.1.2** adds licensing, developer attribution, packaging notices and the activation version log; receipt logic is unchanged. Full live UI coverage was not repeated for that metadata release. Physical Android devices, other Android API levels, iOS, HA/load and production Enterprise Advanced policies are not certified. **Production use:** on 2026-11-22, the maintainer reported successful installation and operation in the company production environment. This is maintainer-reported operational acceptance, separate from the independently recorded lab tests; it does not certify every production topology or policy. See [complete validation and retained exceptions](docs/VALIDATION.md).
+Historical Android/Windows visibility tests used plugin **1.1.1**. Version **1.1.2** added licensing and developer attribution. Version **1.1.3** was validated for RPC recovery and web-only conversations displayed after login and server switching in macOS Desktop **6.3.2**, build **408386646761**, using a dedicated lab-only profile. These newer tests do not expand the historical Android or Windows coverage. Physical Android devices, other Android API levels, iOS, HA/load and production Enterprise Advanced policies are not certified.
+
+**Production history:** on 2026-11-22, the maintainer reported successful company production operation of the earlier plugin. That is maintainer-reported history, separate from independent lab evidence. Publishing **1.1.3** does not deploy it to production; no production deployment or validation of **1.1.3** was performed here. See [validation and retained exceptions](docs/VALIDATION.md).
 
 ## Screenshots
 
@@ -94,10 +105,13 @@ Requirements: Go, Node.js/npm and Python 3. Use pinned dependencies from the loc
 npm ci --prefix webapp
 go test -race ./...
 npm test --prefix webapp
+python3 build/test_lab_install.py
+python3 build/test_source.py
 python3 build/build.py
+python3 build/test_package.py
 ```
 
-The build performs TypeScript checking, builds the web plugin, compiles Linux amd64/arm64 binaries and packages licenses with the archive. `make test` and `make dist` are also available when a working Make toolchain is installed. Output: `dist/mattermost-readreceipts-1.1.2.tar.gz`.
+The build performs TypeScript checking, builds the web plugin, compiles Linux amd64/arm64 binaries and packages licenses with the archive. `make test` and `make dist` are also available when a working Make toolchain is installed. Output: `dist/mattermost-readreceipts-1.1.3.tar.gz` and the matching `-source.tar.gz` archive.
 
 ## Frequently asked questions
 
@@ -127,6 +141,6 @@ The repository is now public, so its documentation and release pages are publicl
 
 ## License and source availability
 
-Original project code is licensed under [Mozilla Public License 2.0](LICENSE). [Licensing scope](LICENSING.md) explains third-party boundaries and the unchanged Android patch/APK licensing. Plugin 1.1.2 contains **Developed by Alireza Ghaffari** and a clickable profile link in its settings. Dependency notices are preserved.
+Original project code is licensed under [Mozilla Public License 2.0](LICENSE). [Licensing scope](LICENSING.md) explains third-party boundaries and the unchanged Android patch/APK licensing. Plugin 1.1.3 retains **Developed by Alireza Ghaffari** and a clickable profile link in its settings. Dependency notices are preserved.
 
-Binary recipients must have access to the corresponding covered source; a source archive accompanies the plugin release. The repository and corresponding source are public. Historical releases and original test evidence are retained; this documentation update does not rebuild the plugin or APK.
+Binary recipients must have access to the corresponding covered source; a source archive accompanies the plugin release. The repository and corresponding source are public. Historical releases and original test evidence are retained. The 1.1.3 server plugin is rebuilt; the Android APK is not rebuilt or replaced.

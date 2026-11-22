@@ -1,4 +1,18 @@
-# Validation — 2026-11-21
+# Validation — 1.1.3 (2026-11-22)
+
+## Release validation and boundaries
+
+The 1.1.3 distribution preserves the receipt protocol and Android APK. Go race tests, 13 web-controller/visibility tests, TypeScript checks, four package tests, four lab-installer tests and one source-export boundary test passed. The source archive includes the explicitly curated public docs/evidence and unchanged mobile reproduction manifests; private local evidence, credentials, keys and database snapshots are excluded.
+
+RPC failure/recovery was exercised on 1.1.3-rc.1 by intentionally pausing the plugin process. The observed health-check-failure-to-reactivation interval decreased from 14.885 seconds on 1.1.2 to 0.401 seconds on the candidate. These are single controlled observations in the local Docker Desktop lab, not a production benchmark. The external trigger of the original unplanned pause was not captured. See [RPC findings and recovery scope](RPC_RECOVERY.md).
+
+The final 1.1.3 package was also tested in the isolated Enterprise 12.0.1/build 39742891057/schema 234/PostgreSQL 17.12 lab. The installed macOS Desktop 6.3.2/build 408386646761 used a dedicated profile containing only local staging servers on ports 18065 and 19065. The source server was Team Edition 12.1.0. Browser tests used the existing Playwright installation because the Browser plugin was unavailable.
+
+The author stayed logged into the source desktop server while a conversation was sent and viewed only in web on the target. Two web readers produced the same Seen list in web. After desktop logout from the source, selection of the target, and login to the target, the existing readers were shown without reloading the page. Logout/login was repeated. No API-created message or receipt was used in this scenario.
+
+Original posts, receipts and first-read timestamps were preserved in the checks against the pre-test records. The final host health-check setting was restored to enabled. No production deployment or production validation of 1.1.3 was performed. Android and Windows were not requalified for 1.1.3; their historical evidence and limitations remain below.
+
+## Historical Android and desktop validation — 2026-11-21
 
 Environment: Enterprise12.0.1/build39742891057/schema234/PostgreSQL17.12, Entry license; installed macOS Desktop6.3.2; two Android16/API36 arm64 emulators. The production Enterprise Advanced environment was not accessed/deployed. Synthetic users:1 desktop author,2/3 web,4/5 native Android.
 

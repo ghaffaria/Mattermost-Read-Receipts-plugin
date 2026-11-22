@@ -1,6 +1,6 @@
 # Licensing
 
-Original project source in `server/`, `webapp/`, `build/` and the project-owned Android preparation script is licensed under **Mozilla Public License 2.0 (MPL-2.0)**. SPDX headers identify covered source files. See [LICENSE](LICENSE). Project-owned manifests, build configuration and documentation are also covered by MPL-2.0 unless an explicit different notice applies. Copyright 2026 Alireza Ghaffari.
+Original project source in `server/`, `webapp/`, `build/`, `ops/` and the project-owned Android preparation script is licensed under **Mozilla Public License 2.0 (MPL-2.0)**. SPDX headers identify covered source files. See [LICENSE](LICENSE). Project-owned manifests, build configuration and documentation are also covered by MPL-2.0 unless an explicit different notice applies. Copyright 2026 Alireza Ghaffari.
 
 
 ## Third-party boundaries

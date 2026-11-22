@@ -9,3 +9,7 @@ dist/
 *.apk
 *.jks
 *.keystore
+
+# Python build/test cache
+__pycache__/
+*.py[cod]
